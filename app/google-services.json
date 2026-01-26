@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "511633081814",
+    "project_id": "eloan-must",
+    "storage_bucket": "eloan-must.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:511633081814:android:0ad14ab17e0dba4cb85077",
+        "android_client_info": {
+          "package_name": "com.example.eloanmust"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAix9NJeefwJTyVqGvwdHdrWGWNrgEBuF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
