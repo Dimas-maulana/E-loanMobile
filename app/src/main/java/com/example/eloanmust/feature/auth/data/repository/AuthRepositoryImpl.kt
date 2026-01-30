@@ -1,10 +1,12 @@
 package com.example.eloanmust.feature.auth.data.repository
 
 import com.example.eloanmust.core.common.Resource
+import com.example.eloanmust.core.database.dao.NotificationDao
 import com.example.eloanmust.core.network.safeApiCall
 import com.example.eloanmust.feature.auth.data.datasource.AuthLocalDataSource
 import com.example.eloanmust.feature.auth.data.datasource.AuthRemoteDataSource
 import com.example.eloanmust.feature.auth.data.dto.ForgotPasswordRequest
+import com.example.eloanmust.feature.auth.data.dto.GoogleAuthRequest
 import com.example.eloanmust.feature.auth.data.dto.ResetPasswordRequest
 import com.example.eloanmust.feature.auth.data.mapper.toDomain
 import com.example.eloanmust.feature.auth.data.mapper.toRequest
@@ -26,7 +28,8 @@ import javax.inject.Singleton
 @Singleton
 class AuthRepositoryImpl @Inject constructor(
     private val remoteDataSource: AuthRemoteDataSource,
-    private val localDataSource: AuthLocalDataSource
+    private val localDataSource: AuthLocalDataSource,
+    private val notificationDao: NotificationDao
 ) : AuthRepository {
     
     override suspend fun login(credentials: LoginCredentials): Resource<UserSession> {
@@ -55,6 +58,39 @@ class AuthRepositoryImpl @Inject constructor(
             }
             is Resource.Error -> {
                 Timber.e("Login failed: ${result.message}")
+                Resource.Error(result.message, result.code, result.exception)
+            }
+            is Resource.Loading -> Resource.Loading
+            is Resource.Idle -> Resource.Idle
+        }
+    }
+    
+    override suspend fun loginWithGoogle(idToken: String, fcmToken: String?): Resource<UserSession> {
+        Timber.d("Attempting Google login")
+        
+        val result = safeApiCall {
+            remoteDataSource.loginWithGoogle(GoogleAuthRequest(idToken, fcmToken))
+        }
+        
+        return when (result) {
+            is Resource.Success -> {
+                val userSession = result.data.toUserSession()
+                
+                // Save session to local storage
+                localDataSource.saveLoginSession(
+                    accessToken = userSession.accessToken,
+                    refreshToken = userSession.refreshToken,
+                    userId = userSession.user.id,
+                    username = userSession.user.username,
+                    email = userSession.user.email,
+                    role = userSession.user.role
+                )
+                
+                Timber.d("Google login successful for user: ${userSession.user.username}")
+                Resource.Success(userSession)
+            }
+            is Resource.Error -> {
+                Timber.e("Google login failed: ${result.message}")
                 Resource.Error(result.message, result.code, result.exception)
             }
             is Resource.Loading -> Resource.Loading
@@ -93,6 +129,10 @@ class AuthRepositoryImpl @Inject constructor(
         
         // Always clear local session, even if server logout fails
         localDataSource.clearLoginSession()
+        
+        // Clear all notifications to ensure clean state for next user
+        notificationDao.clearAll()
+        Timber.d("Cleared all local notifications on logout")
         
         return when (result) {
             is Resource.Success -> {

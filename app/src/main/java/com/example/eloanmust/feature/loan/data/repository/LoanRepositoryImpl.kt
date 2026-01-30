@@ -61,6 +61,8 @@ class LoanRepositoryImpl @Inject constructor(
     override suspend fun applyLoan(application: LoanApplication): Resource<Loan> {
         Timber.d("Applying for loan: amount=${application.amount}, tenor=${application.tenor}")
         
+        val userId = tokenManager.userId.first() ?: return Resource.Error("User not logged in")
+        
         val result = safeApiCall {
             remoteDataSource.applyLoan(application.toRequest())
         }
@@ -69,7 +71,7 @@ class LoanRepositoryImpl @Inject constructor(
             is Resource.Success -> {
                 // Cache the new loan locally
                 val loan = result.data.toDomain()
-                localDataSource.insertLoan(result.data.toEntity())
+                localDataSource.insertLoan(result.data.toEntity(userId))
                 
                 Timber.d("Loan application successful: id=${loan.id}")
                 Resource.Success(loan)
@@ -119,7 +121,7 @@ class LoanRepositoryImpl @Inject constructor(
                 // Step 3: Update local cache
                 val remoteLoans = remoteResult.data
                 localDataSource.clearLoansForUser(userId)
-                localDataSource.insertLoans(remoteLoans.map { it.toEntity() })
+                localDataSource.insertLoans(remoteLoans.map { it.toEntity(userId) })
                 
                 // Step 4: Emit fresh data
                 val domainLoans = remoteLoans.map { it.toDomain() }
@@ -151,6 +153,11 @@ class LoanRepositoryImpl @Inject constructor(
     override fun getLoanById(loanId: Long): Flow<Resource<Loan>> = flow {
         Timber.d("Getting loan by ID: $loanId")
         
+        val userId = tokenManager.userId.first() ?: run {
+            emit(Resource.Error("User not logged in"))
+            return@flow
+        }
+        
         // Step 1: Check cache first
         val cachedLoan = localDataSource.getLoanByIdSync(loanId)
         if (cachedLoan != null) {
@@ -168,7 +175,7 @@ class LoanRepositoryImpl @Inject constructor(
         when (remoteResult) {
             is Resource.Success -> {
                 // Update cache
-                localDataSource.insertLoan(remoteResult.data.toEntity())
+                localDataSource.insertLoan(remoteResult.data.toEntity(userId))
                 
                 // Emit fresh data
                 Timber.d("Emitting fresh loan from remote: $loanId")
@@ -199,7 +206,7 @@ class LoanRepositoryImpl @Inject constructor(
         return when (result) {
             is Resource.Success -> {
                 localDataSource.clearLoansForUser(userId)
-                localDataSource.insertLoans(result.data.map { it.toEntity() })
+                localDataSource.insertLoans(result.data.map { it.toEntity(userId) })
                 Timber.d("Loans refreshed: ${result.data.size} items")
                 Resource.Success(Unit)
             }

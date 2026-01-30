@@ -52,6 +52,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.eloanmust.core.common.toRupiah
 import com.example.eloanmust.core.designsystem.theme.ELoanColors
@@ -79,6 +80,7 @@ fun HomeScreen(
             HomeHeader(
                 username = state.username,
                 isLoggedIn = state.isLoggedIn,
+                unreadNotificationCount = state.unreadNotificationCount,
                 onLoginClick = onNavigateToLogin,
                 onNotificationClick = onNavigateToNotifications,
                 onProfileClick = onNavigateToProfile
@@ -190,6 +192,7 @@ fun HomeScreen(
 private fun HomeHeader(
     username: String,
     isLoggedIn: Boolean,
+    unreadNotificationCount: Int,
     onLoginClick: () -> Unit,
     onNotificationClick: () -> Unit,
     onProfileClick: () -> Unit
@@ -221,8 +224,30 @@ private fun HomeHeader(
                 
                 Row {
                     if (isLoggedIn) {
-                        IconButton(onClick = onNotificationClick) {
-                            Icon(Icons.Default.Notifications, "Notifications", tint = Color.Black)
+                        // Notification Icon with Badge
+                        Box {
+                            IconButton(onClick = onNotificationClick) {
+                                Icon(Icons.Default.Notifications, "Notifications", tint = Color.Black)
+                            }
+                            // Unread count badge
+                            if (unreadNotificationCount > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(18.dp)
+                                        .clip(CircleShape)
+                                        .background(Color.Red)
+                                        .align(Alignment.TopEnd)
+                                        .padding(top = 4.dp, end = 4.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = if (unreadNotificationCount > 9) "9+" else unreadNotificationCount.toString(),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = Color.White,
+                                        fontSize = 10.sp
+                                    )
+                                }
+                            }
                         }
                         IconButton(onClick = onProfileClick) {
                             Box(

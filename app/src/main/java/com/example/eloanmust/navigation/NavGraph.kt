@@ -4,11 +4,6 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -17,12 +12,9 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
@@ -36,6 +28,12 @@ import com.example.eloanmust.feature.auth.presentation.forgot_password.ForgotPas
 import com.example.eloanmust.feature.auth.presentation.login.LoginScreen
 import com.example.eloanmust.feature.auth.presentation.register.RegisterScreen
 import com.example.eloanmust.feature.home.presentation.HomeScreen
+import com.example.eloanmust.feature.loan.presentation.apply.LoanApplyScreen
+import com.example.eloanmust.feature.loan.presentation.detail.LoanDetailScreen
+import com.example.eloanmust.feature.loan.presentation.history.LoanHistoryScreen
+import com.example.eloanmust.feature.loan.presentation.simulation.LoanSimulationScreen
+import com.example.eloanmust.feature.notification.presentation.NotificationScreen
+import com.example.eloanmust.feature.profile.presentation.ProfileScreen
 
 /**
  * Main Navigation Graph for the application.
@@ -115,23 +113,37 @@ fun EloanNavGraph(
             }
             
             composable(Screen.LoanHistory.route) {
-                PlaceholderScreen(
-                    title = "Riwayat Pinjaman",
-                    showBackButton = false
+                LoanHistoryScreen(
+                    onNavigateToDetail = { loanId ->
+                        navController.navigate(Screen.LoanDetail.createRoute(loanId))
+                    },
+                    onNavigateToApply = {
+                        navController.navigate(Screen.LoanApply.route)
+                    },
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route)
+                    }
                 )
             }
             
             composable(Screen.Notifications.route) {
-                PlaceholderScreen(
-                    title = "Notifikasi",
-                    showBackButton = false
+                NotificationScreen(
+                    onNavigateToLoanDetail = { loanId ->
+                        navController.navigate(Screen.LoanDetail.createRoute(loanId))
+                    },
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route)
+                    }
                 )
             }
             
             composable(Screen.Profile.route) {
-                PlaceholderScreen(
-                    title = "Profil",
-                    showBackButton = false
+                ProfileScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
                 )
             }
             
@@ -143,7 +155,7 @@ fun EloanNavGraph(
                 LoginScreen(
                     onNavigateToHome = {
                         navController.navigate(Screen.Home.route) {
-                            popUpTo(Screen.Home.route) { inclusive = true }
+                            popUpTo(Screen.Login.route) { inclusive = true }
                         }
                     },
                     onNavigateToRegister = {
@@ -189,27 +201,37 @@ fun EloanNavGraph(
             // ============================================
             
             composable(Screen.LoanSimulation.route) {
-                PlaceholderScreen(
-                    title = "Simulasi Pinjaman",
-                    onBack = { navController.popBackStack() }
+                LoanSimulationScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToApply = { navController.navigate(Screen.LoanApply.route) },
+                    onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                    onNavigateToLogin = { navController.navigate(Screen.Login.route) },
+                    onNavigateToHistory = {
+                        navController.navigate(Screen.LoanHistory.route) {
+                            popUpTo(Screen.Home.route)
+                        }
+                    }
                 )
             }
             
             composable(Screen.LoanApply.route) {
-                PlaceholderScreen(
-                    title = "Ajukan Pinjaman",
-                    onBack = { navController.popBackStack() }
+                LoanApplyScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                    onNavigateToHistory = {
+                        navController.navigate(Screen.LoanHistory.route) {
+                            popUpTo(Screen.Home.route)
+                        }
+                    }
                 )
             }
             
             composable(
                 route = Screen.LoanDetail.route,
                 arguments = listOf(navArgument("loanId") { type = NavType.LongType })
-            ) { backStackEntry ->
-                val loanId = backStackEntry.arguments?.getLong("loanId") ?: 0L
-                PlaceholderScreen(
-                    title = "Detail Pinjaman #$loanId",
-                    onBack = { navController.popBackStack() }
+            ) {
+                LoanDetailScreen(
+                    onNavigateBack = { navController.popBackStack() }
                 )
             }
             
@@ -218,16 +240,12 @@ fun EloanNavGraph(
             // ============================================
             
             composable(Screen.EditProfile.route) {
-                PlaceholderScreen(
-                    title = "Edit Profil",
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            
-            composable(Screen.UploadKtp.route) {
-                PlaceholderScreen(
-                    title = "Upload KTP",
-                    onBack = { navController.popBackStack() }
+                ProfileScreen(
+                    onNavigateToLogin = {
+                        navController.navigate(Screen.Login.route) {
+                            popUpTo(Screen.Home.route) { inclusive = true }
+                        }
+                    }
                 )
             }
         }
@@ -274,36 +292,6 @@ fun EloanBottomNavBar(navController: NavHostController) {
                     unselectedTextColor = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             )
-        }
-    }
-}
-
-@Composable
-fun PlaceholderScreen(
-    title: String,
-    showBackButton: Boolean = true,
-    onBack: () -> Unit = {}
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(text = title, style = MaterialTheme.typography.headlineMedium)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = "Coming Soon",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            if (showBackButton) {
-                Spacer(modifier = Modifier.height(16.dp))
-                TextButton(onClick = onBack) {
-                    Text("Kembali", color = Gold70)
-                }
-            }
         }
     }
 }

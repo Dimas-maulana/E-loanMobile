@@ -2,7 +2,6 @@ package com.example.eloanmust.feature.loan.data.mapper
 
 import com.example.eloanmust.feature.loan.data.dto.LoanApplicationRequest
 import com.example.eloanmust.feature.loan.data.dto.LoanDto
-import com.example.eloanmust.feature.loan.data.dto.LoanSimulationRequest
 import com.example.eloanmust.feature.loan.data.dto.LoanSimulationResponse
 import com.example.eloanmust.feature.loan.data.local.LoanEntity
 import com.example.eloanmust.feature.loan.domain.model.Loan
@@ -14,121 +13,69 @@ import java.util.Date
 import java.util.Locale
 
 /**
- * Mapper functions for Loan feature.
+ * Date format for parsing API date strings
  */
-
-// ============================================
-// DTO TO DOMAIN MAPPERS
-// ============================================
+private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
 
 /**
- * Convert LoanDto to Loan domain model
+ * Parse date string to Date, returns current date if parsing fails
+ */
+private fun parseDate(dateString: String?): Date {
+    return dateString?.let {
+        try {
+            dateFormat.parse(it) ?: Date()
+        } catch (e: Exception) {
+            Date()
+        }
+    } ?: Date()
+}
+
+/**
+ * Extension function to convert LoanSimulationResponse to LoanSimulation domain model
+ */
+fun LoanSimulationResponse.toDomain(): LoanSimulation {
+    return LoanSimulation(
+        amount = this.loanAmount,
+        tenor = this.tenor,
+        interestRate = this.interestRate,
+        monthlyPayment = this.monthlyInstallment,
+        totalPayment = this.totalPayment,
+        totalInterest = this.totalInterest,
+        productName = this.plafondName,
+        productId = this.plafondId
+    )
+}
+
+/**
+ * Extension function to convert LoanDto to Loan domain model
  */
 fun LoanDto.toDomain(): Loan {
     return Loan(
         id = this.id,
-        userId = this.user?.id ?: this.userId ?: 0L,
+        userId = 0L, // Will be set from token manager
         amount = this.amount,
         tenor = this.tenor,
         interestRate = this.interestRate,
-        monthlyPayment = this.monthlyPayment,
+        monthlyPayment = this.monthlyInstallment,
         totalPayment = this.totalPayment,
         status = LoanStatus.fromValue(this.status),
-        productName = this.plafond?.name,
-        productId = this.plafond?.id,
+        productName = this.plafondName,
+        productId = this.plafondId,
         purpose = this.purpose,
-        notes = this.notes,
-        reviewedBy = this.reviewedBy,
-        reviewedAt = this.reviewedAt?.toDate(),
-        approvedBy = this.approvedBy,
-        approvedAt = this.approvedAt?.toDate(),
-        disbursedAt = this.disbursedAt?.toDate(),
-        rejectionReason = this.rejectionReason,
-        createdAt = this.createdAt.toDate() ?: Date(),
-        updatedAt = this.updatedAt?.toDate()
+        notes = null,
+        reviewedBy = null,
+        reviewedAt = null,
+        approvedBy = null,
+        approvedAt = null,
+        disbursedAt = null,
+        rejectionReason = null,
+        createdAt = parseDate(this.createdAt),
+        updatedAt = this.updatedAt?.let { parseDate(it) }
     )
 }
 
 /**
- * Convert LoanSimulationResponse to LoanSimulation domain model
- */
-fun LoanSimulationResponse.toDomain(): LoanSimulation {
-    return LoanSimulation(
-        amount = this.amount,
-        tenor = this.tenor,
-        interestRate = this.interestRate,
-        monthlyPayment = this.monthlyPayment,
-        totalPayment = this.totalPayment,
-        totalInterest = this.totalInterest,
-        productName = this.plafond?.name,
-        productId = this.plafond?.id
-    )
-}
-
-// ============================================
-// DOMAIN TO DTO MAPPERS
-// ============================================
-
-/**
- * Convert LoanApplication to LoanApplicationRequest
- */
-fun LoanApplication.toRequest(): LoanApplicationRequest {
-    return LoanApplicationRequest(
-        amount = this.amount,
-        tenor = this.tenor,
-        purpose = this.purpose
-    )
-}
-
-/**
- * Create simulation request
- */
-fun createSimulationRequest(amount: Double, tenor: Int): LoanSimulationRequest {
-    return LoanSimulationRequest(
-        amount = amount,
-        tenor = tenor
-    )
-}
-
-// ============================================
-// DTO TO ENTITY MAPPERS
-// ============================================
-
-/**
- * Convert LoanDto to LoanEntity for local caching
- */
-fun LoanDto.toEntity(): LoanEntity {
-    return LoanEntity(
-        id = this.id,
-        userId = this.user?.id ?: this.userId ?: 0L,
-        amount = this.amount,
-        tenor = this.tenor,
-        interestRate = this.interestRate,
-        monthlyPayment = this.monthlyPayment,
-        totalPayment = this.totalPayment,
-        status = this.status,
-        productName = this.plafond?.name,
-        productId = this.plafond?.id,
-        purpose = this.purpose,
-        notes = this.notes,
-        reviewedBy = this.reviewedBy,
-        reviewedAt = this.reviewedAt?.toDate()?.time,
-        approvedBy = this.approvedBy,
-        approvedAt = this.approvedAt?.toDate()?.time,
-        disbursedAt = this.disbursedAt?.toDate()?.time,
-        rejectionReason = this.rejectionReason,
-        createdAt = this.createdAt.toDate()?.time ?: System.currentTimeMillis(),
-        updatedAt = this.updatedAt?.toDate()?.time,
-        cachedAt = System.currentTimeMillis()
-    )
-}
-
-// ============================================
-// ENTITY TO DOMAIN MAPPERS
-// ============================================
-
-/**
- * Convert LoanEntity to Loan domain model
+ * Extension function to convert LoanEntity to Loan domain model
  */
 fun LoanEntity.toDomain(): Loan {
     return Loan(
@@ -137,50 +84,84 @@ fun LoanEntity.toDomain(): Loan {
         amount = this.amount,
         tenor = this.tenor,
         interestRate = this.interestRate,
-        monthlyPayment = this.monthlyPayment,
+        monthlyPayment = this.monthlyInstallment,
         totalPayment = this.totalPayment,
         status = LoanStatus.fromValue(this.status),
-        productName = this.productName,
-        productId = this.productId,
+        productName = this.plafondName,
+        productId = this.plafondId,
         purpose = this.purpose,
-        notes = this.notes,
-        reviewedBy = this.reviewedBy,
-        reviewedAt = this.reviewedAt?.let { Date(it) },
-        approvedBy = this.approvedBy,
-        approvedAt = this.approvedAt?.let { Date(it) },
-        disbursedAt = this.disbursedAt?.let { Date(it) },
-        rejectionReason = this.rejectionReason,
-        createdAt = Date(this.createdAt),
-        updatedAt = this.updatedAt?.let { Date(it) }
+        notes = null,
+        reviewedBy = null,
+        reviewedAt = null,
+        approvedBy = null,
+        approvedAt = null,
+        disbursedAt = null,
+        rejectionReason = null,
+        createdAt = parseDate(this.createdAt),
+        updatedAt = this.updatedAt?.let { parseDate(it) }
     )
 }
 
-// ============================================
-// HELPER FUNCTIONS
-// ============================================
+/**
+ * Extension function to convert LoanApplication to LoanApplicationRequest
+ */
+fun LoanApplication.toRequest(): LoanApplicationRequest {
+    return LoanApplicationRequest(
+        amount = this.amount,
+        tenorMonth = this.tenor
+    )
+}
 
 /**
- * Parse date string to Date object
+ * Extension function to convert LoanDto to LoanEntity
  */
-private fun String.toDate(): Date? {
-    return try {
-        val formats = listOf(
-            "yyyy-MM-dd'T'HH:mm:ss.SSSSSS",
-            "yyyy-MM-dd'T'HH:mm:ss.SSS",
-            "yyyy-MM-dd'T'HH:mm:ss",
-            "yyyy-MM-dd HH:mm:ss",
-            "yyyy-MM-dd"
-        )
-        
-        for (format in formats) {
-            try {
-                return SimpleDateFormat(format, Locale.getDefault()).parse(this)
-            } catch (e: Exception) {
-                continue
-            }
-        }
-        null
-    } catch (e: Exception) {
-        null
-    }
+fun LoanDto.toEntity(userId: Long): LoanEntity {
+    return LoanEntity(
+        id = this.id,
+        userId = userId,
+        amount = this.amount,
+        tenor = this.tenor,
+        interestRate = this.interestRate,
+        totalInterest = this.totalInterest,
+        totalPayment = this.totalPayment,
+        monthlyInstallment = this.monthlyInstallment,
+        status = this.status,
+        purpose = this.purpose,
+        plafondId = this.plafondId,
+        plafondName = this.plafondName,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt,
+        lastSyncedAt = System.currentTimeMillis()
+    )
 }
+
+/**
+ * Extension function to convert LoanEntity to LoanDto
+ */
+fun LoanEntity.toDto(): LoanDto {
+    return LoanDto(
+        id = this.id,
+        amount = this.amount,
+        tenor = this.tenor,
+        interestRate = this.interestRate,
+        totalInterest = this.totalInterest,
+        totalPayment = this.totalPayment,
+        monthlyInstallment = this.monthlyInstallment,
+        status = this.status,
+        purpose = this.purpose,
+        plafondId = this.plafondId,
+        plafondName = this.plafondName,
+        createdAt = this.createdAt,
+        updatedAt = this.updatedAt
+    )
+}
+
+/**
+ * Extension function to convert list of LoanEntity to list of LoanDto
+ */
+fun List<LoanEntity>.toDtoList(): List<LoanDto> = map { it.toDto() }
+
+/**
+ * Extension function to convert list of LoanDto to list of LoanEntity
+ */
+fun List<LoanDto>.toEntityList(userId: Long): List<LoanEntity> = map { it.toEntity(userId) }

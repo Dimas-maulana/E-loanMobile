@@ -23,13 +23,18 @@ import javax.inject.Inject
 data class RegisterState(
     val username: String = "",
     val email: String = "",
+    val fullname: String = "",
+    val phone: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
     val isPasswordVisible: Boolean = false,
     val isConfirmPasswordVisible: Boolean = false,
     val usernameError: String? = null,
     val emailError: String? = null,
+    val fullnameError: String? = null,
+    val phoneError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null
 )
@@ -56,6 +61,12 @@ class RegisterViewModel @Inject constructor(
             is RegisterEvent.EmailChanged -> {
                 _state.update { it.copy(email = event.value, emailError = null) }
             }
+            is RegisterEvent.FullnameChanged -> {
+                _state.update { it.copy(fullname = event.value, fullnameError = null) }
+            }
+            is RegisterEvent.PhoneChanged -> {
+                _state.update { it.copy(phone = event.value, phoneError = null) }
+            }
             is RegisterEvent.PasswordChanged -> {
                 _state.update { it.copy(password = event.value, passwordError = null) }
             }
@@ -76,6 +87,12 @@ class RegisterViewModel @Inject constructor(
                     _uiEvent.send(UiEvent.Navigate("login"))
                 }
             }
+            is RegisterEvent.DismissSuccessDialog -> {
+                 _state.update { it.copy(isSuccess = false) }
+                 viewModelScope.launch {
+                     _uiEvent.send(UiEvent.Navigate("login"))
+                 }
+            }
         }
     }
     
@@ -93,6 +110,16 @@ class RegisterViewModel @Inject constructor(
             
             if (currentState.email.isBlank()) {
                 _state.update { it.copy(emailError = "Email tidak boleh kosong") }
+                hasError = true
+            }
+            
+            if (currentState.fullname.isBlank()) {
+                _state.update { it.copy(fullnameError = "Nama lengkap tidak boleh kosong") }
+                hasError = true
+            }
+            
+            if (currentState.phone.isBlank()) {
+                _state.update { it.copy(phoneError = "Nomor telepon tidak boleh kosong") }
                 hasError = true
             }
             
@@ -120,15 +147,15 @@ class RegisterViewModel @Inject constructor(
                     username = currentState.username.trim(),
                     email = currentState.email.trim(),
                     password = currentState.password,
-                    confirmPassword = currentState.confirmPassword
+                    confirmPassword = currentState.confirmPassword,
+                    fullname = currentState.fullname.trim(),
+                    phone = currentState.phone.trim()
                 )
                 
                 when (val result = registerUseCase(registrationData)) {
                     is Resource.Success -> {
                         Timber.d("Registration successful")
-                        _state.update { it.copy(isLoading = false) }
-                        _uiEvent.send(UiEvent.ShowSnackbar("Registrasi berhasil! Silakan login."))
-                        _uiEvent.send(UiEvent.Navigate("login"))
+                        _state.update { it.copy(isLoading = false, isSuccess = true) }
                     }
                     is Resource.Error -> {
                         Timber.e("Registration failed: ${result.message}")
@@ -151,10 +178,13 @@ class RegisterViewModel @Inject constructor(
 sealed class RegisterEvent {
     data class UsernameChanged(val value: String) : RegisterEvent()
     data class EmailChanged(val value: String) : RegisterEvent()
+    data class FullnameChanged(val value: String) : RegisterEvent()
+    data class PhoneChanged(val value: String) : RegisterEvent()
     data class PasswordChanged(val value: String) : RegisterEvent()
     data class ConfirmPasswordChanged(val value: String) : RegisterEvent()
     data object TogglePasswordVisibility : RegisterEvent()
     data object ToggleConfirmPasswordVisibility : RegisterEvent()
     data object Register : RegisterEvent()
     data object NavigateToLogin : RegisterEvent()
+    data object DismissSuccessDialog : RegisterEvent()
 }

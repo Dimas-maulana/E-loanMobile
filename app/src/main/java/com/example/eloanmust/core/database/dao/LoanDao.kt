@@ -66,7 +66,7 @@ interface LoanDao {
      * Clear all loans for user
      */
     @Query("DELETE FROM loans WHERE userId = :userId")
-    suspend fun clearLoansForUser(userId: Long)
+    suspend fun deleteByUserId(userId: Long)
     
     /**
      * Clear all loans

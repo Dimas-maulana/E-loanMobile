@@ -75,7 +75,9 @@ fun RegistrationData.toRequest(): RegisterRequest {
     return RegisterRequest(
         username = this.username,
         email = this.email,
-        password = this.password
+        password = this.password,
+        fullname = this.fullname,
+        phone = this.phone
     )
 }
 

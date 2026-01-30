@@ -2,7 +2,6 @@ package com.example.eloanmust.feature.loan.data.local
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.util.Date
 
 /**
  * Room entity for Loan.
@@ -16,20 +15,14 @@ data class LoanEntity(
     val amount: Double,
     val tenor: Int,
     val interestRate: Double,
-    val monthlyPayment: Double,
+    val totalInterest: Double,
     val totalPayment: Double,
+    val monthlyInstallment: Double,
     val status: String,
-    val productName: String?,
-    val productId: Long?,
-    val purpose: String?,
-    val notes: String?,
-    val reviewedBy: String?,
-    val reviewedAt: Long?,
-    val approvedBy: String?,
-    val approvedAt: Long?,
-    val disbursedAt: Long?,
-    val rejectionReason: String?,
-    val createdAt: Long,
-    val updatedAt: Long?,
-    val cachedAt: Long = System.currentTimeMillis()
+    val purpose: String? = null,
+    val plafondId: Long? = null,
+    val plafondName: String? = null,
+    val createdAt: String? = null,
+    val updatedAt: String? = null,
+    val lastSyncedAt: Long = System.currentTimeMillis()
 )

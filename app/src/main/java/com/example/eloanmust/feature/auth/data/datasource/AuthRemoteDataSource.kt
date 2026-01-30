@@ -3,6 +3,7 @@ package com.example.eloanmust.feature.auth.data.datasource
 import com.example.eloanmust.core.network.ApiResponse
 import com.example.eloanmust.core.network.ApiService
 import com.example.eloanmust.feature.auth.data.dto.ForgotPasswordRequest
+import com.example.eloanmust.feature.auth.data.dto.GoogleAuthRequest
 import com.example.eloanmust.feature.auth.data.dto.LoginRequest
 import com.example.eloanmust.feature.auth.data.dto.LoginResponse
 import com.example.eloanmust.feature.auth.data.dto.RegisterRequest
@@ -26,6 +27,13 @@ class AuthRemoteDataSource @Inject constructor(
      */
     suspend fun login(request: LoginRequest): Response<ApiResponse<LoginResponse>> {
         return apiService.login(request)
+    }
+    
+    /**
+     * Login with Google using Firebase ID Token
+     */
+    suspend fun loginWithGoogle(request: GoogleAuthRequest): Response<ApiResponse<LoginResponse>> {
+        return apiService.loginWithGoogle(request)
     }
     
     /**

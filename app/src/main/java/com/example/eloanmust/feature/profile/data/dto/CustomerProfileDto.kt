@@ -3,88 +3,80 @@ package com.example.eloanmust.feature.profile.data.dto
 import com.google.gson.annotations.SerializedName
 
 /**
- * Customer profile DTO from API
+ * DTO for customer profile data
  */
 data class CustomerProfileDto(
     @SerializedName("id")
-    val id: Long,
+    val id: Long? = null,
     
     @SerializedName("userId")
-    val userId: Long,
+    val userId: Long? = null,
     
     @SerializedName("fullName")
-    val fullName: String?,
+    val fullName: String? = null,
     
-    @SerializedName("nik")
-    val nik: String?,
-    
-    @SerializedName("birthDate")
-    val birthDate: String?,
-    
-    @SerializedName("birthPlace")
-    val birthPlace: String?,
-    
+    @SerializedName("identityNumber")
+    val nik: String? = null,
+
+    @SerializedName("tanggalLahir")
+    val birthDate: String? = null,
+
     @SerializedName("address")
-    val address: String?,
+    val address: String? = null,
+
+    @SerializedName("bankAccountNumber")
+    val bankAccountNumber: String? = null,
+
+    @SerializedName("bankName")
+    val bankName: String? = null,
+
+    @SerializedName("bankAccountHolderName")
+    val bankAccountName: String? = null,
     
-    @SerializedName("phoneNumber")
-    val phoneNumber: String?,
-    
-    @SerializedName("occupation")
-    val occupation: String?,
-    
-    @SerializedName("monthlyIncome")
-    val monthlyIncome: Double?,
-    
-    @SerializedName("ktpImageUrl")
-    val ktpImageUrl: String?,
+    @SerializedName("ktpUrl")
+    val ktpImageUrl: String? = null,
     
     @SerializedName("createdAt")
-    val createdAt: String?,
+    val createdAt: String? = null,
     
     @SerializedName("updatedAt")
-    val updatedAt: String?
+    val updatedAt: String? = null
 )
 
 /**
- * Profile update request DTO
+ * DTO for profile update request
  */
 data class CustomerProfileRequest(
     @SerializedName("fullName")
     val fullName: String,
     
-    @SerializedName("nik")
+    @SerializedName("identityNumber")
     val nik: String,
-    
-    @SerializedName("birthDate")
+
+    @SerializedName("tanggalLahir")
     val birthDate: String,
-    
-    @SerializedName("birthPlace")
-    val birthPlace: String,
-    
+
     @SerializedName("address")
     val address: String,
+
+    @SerializedName("bankAccountNumber")
+    val bankAccountNumber: String? = null,
+
+    @SerializedName("bankName")
+    val bankName: String? = null,
+
+    @SerializedName("bankAccountHolderName")
+    val bankAccountName: String? = null
     
-    @SerializedName("phoneNumber")
-    val phoneNumber: String,
-    
-    @SerializedName("occupation")
-    val occupation: String,
-    
-    @SerializedName("monthlyIncome")
-    val monthlyIncome: Double,
-    
-    @SerializedName("ktpImage")
-    val ktpImage: String? = null // Base64 encoded
 )
 
 /**
- * Profile status response DTO
+ * DTO for profile status response
  */
 data class ProfileStatusResponse(
-    @SerializedName("isComplete")
-    val isComplete: Boolean,
+    @SerializedName("isComplete", alternate = ["is_complete", "complete"])
+    val isComplete: Boolean = false,
     
-    @SerializedName("missingFields")
-    val missingFields: List<String>?
+    @SerializedName("missingFields", alternate = ["missing_fields", "missing_data"])
+    val missingFields: List<String>? = null
 )

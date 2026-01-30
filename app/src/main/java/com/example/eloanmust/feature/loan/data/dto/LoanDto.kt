@@ -3,139 +3,124 @@ package com.example.eloanmust.feature.loan.data.dto
 import com.google.gson.annotations.SerializedName
 
 /**
- * Loan DTO from API response
- */
-data class LoanDto(
-    @SerializedName("id")
-    val id: Long,
-    
-    @SerializedName("user")
-    val user: UserMinimalDto? = null,
-    
-    @SerializedName("userId")
-    val userId: Long? = null,
-    
-    @SerializedName("amount")
-    val amount: Double,
-    
-    @SerializedName("tenor")
-    val tenor: Int,
-    
-    @SerializedName("interestRate")
-    val interestRate: Double,
-    
-    @SerializedName("monthlyPayment")
-    val monthlyPayment: Double,
-    
-    @SerializedName("totalPayment")
-    val totalPayment: Double,
-    
-    @SerializedName("status")
-    val status: String,
-    
-    @SerializedName("plafond")
-    val plafond: PlafondMinimalDto? = null,
-    
-    @SerializedName("purpose")
-    val purpose: String? = null,
-    
-    @SerializedName("notes")
-    val notes: String? = null,
-    
-    @SerializedName("reviewedBy")
-    val reviewedBy: String? = null,
-    
-    @SerializedName("reviewedAt")
-    val reviewedAt: String? = null,
-    
-    @SerializedName("approvedBy")
-    val approvedBy: String? = null,
-    
-    @SerializedName("approvedAt")
-    val approvedAt: String? = null,
-    
-    @SerializedName("disbursedAt")
-    val disbursedAt: String? = null,
-    
-    @SerializedName("rejectionReason")
-    val rejectionReason: String? = null,
-    
-    @SerializedName("createdAt")
-    val createdAt: String,
-    
-    @SerializedName("updatedAt")
-    val updatedAt: String? = null
-)
-
-/**
- * Minimal user DTO
- */
-data class UserMinimalDto(
-    @SerializedName("id")
-    val id: Long,
-    
-    @SerializedName("username")
-    val username: String
-)
-
-/**
- * Minimal plafond DTO
- */
-data class PlafondMinimalDto(
-    @SerializedName("id")
-    val id: Long,
-    
-    @SerializedName("name")
-    val name: String
-)
-
-/**
- * Loan simulation request DTO
+ * DTO for loan simulation request
  */
 data class LoanSimulationRequest(
     @SerializedName("amount")
     val amount: Double,
     
     @SerializedName("tenor")
-    val tenor: Int
-)
-
-/**
- * Loan simulation response DTO
- */
-data class LoanSimulationResponse(
-    @SerializedName("amount")
-    val amount: Double,
-    
-    @SerializedName("tenor")
     val tenor: Int,
     
-    @SerializedName("interestRate")
-    val interestRate: Double,
-    
-    @SerializedName("monthlyPayment")
-    val monthlyPayment: Double,
-    
-    @SerializedName("totalPayment")
-    val totalPayment: Double,
-    
-    @SerializedName("totalInterest")
-    val totalInterest: Double,
-    
-    @SerializedName("plafond")
-    val plafond: PlafondMinimalDto? = null
+    @SerializedName("plafondId")
+    val plafondId: Long? = null
 )
 
 /**
- * Loan application request DTO
+ * DTO for loan simulation response
+ */
+data class LoanSimulationResponse(
+    @SerializedName("loanAmount", alternate = ["amount", "loan_amount", "pokok"])
+    val loanAmount: Double = 0.0,
+    
+    @SerializedName("tenor")
+    val tenor: Int = 0,
+    
+    @SerializedName("interestRate", alternate = ["interest_rate", "rate", "bunga", "bunga_persen"])
+    val interestRate: Double = 0.0,
+    
+    @SerializedName("totalInterest", alternate = ["total_interest", "total_bunga", "bunga_total"])
+    val totalInterest: Double = 0.0,
+    
+    @SerializedName("totalPayment", alternate = ["total_payment", "total_bayar"])
+    val totalPayment: Double = 0.0,
+    
+    @SerializedName("monthlyInstallment", alternate = ["monthly_installment", "installment", "cicilan_per_bulan", "cicilan"])
+    val monthlyInstallment: Double = 0.0,
+    
+    @SerializedName("plafondId", alternate = ["plafond_id"])
+    val plafondId: Long? = null,
+    
+    @SerializedName("plafondName", alternate = ["plafond_name", "product_name"])
+    val plafondName: String? = null
+)
+
+/**
+ * DTO for loan application request - matches swagger POST api/loans
+ * Only requires amount and tenorMonth
  */
 data class LoanApplicationRequest(
     @SerializedName("amount")
     val amount: Double,
     
+    @SerializedName("tenorMonth")
+    val tenorMonth: Int
+)
+
+/**
+ * DTO for loan data - matches swagger response from POST api/loans
+ */
+data class LoanDto(
+    @SerializedName("id")
+    val id: Long,
+    
+    @SerializedName("customerId")
+    val customerId: Long? = null,
+    
+    @SerializedName("customerName")
+    val customerName: String? = null,
+    
+    @SerializedName("plafondId")
+    val plafondId: Long? = null,
+    
+    @SerializedName("plafondName")
+    val plafondName: String? = null,
+    
+    @SerializedName("amount")
+    val amount: Double,
+    
+    @SerializedName("tenorMonth")
+    val tenorMonth: Int? = null,
+    
     @SerializedName("tenor")
-    val tenor: Int,
+    val tenor: Int = 0,
+    
+    @SerializedName("maxTenorMonth")
+    val maxTenorMonth: Int? = null,
+    
+    @SerializedName("baseInterestRate")
+    val baseInterestRate: Double? = null,
+    
+    @SerializedName("actualInterestRate")
+    val actualInterestRate: Double? = null,
+    
+    @SerializedName("interestRate")
+    val interestRate: Double = 0.0,
+    
+    @SerializedName("totalInterest")
+    val totalInterest: Double = 0.0,
+    
+    @SerializedName("totalPayment")
+    val totalPayment: Double = 0.0,
+    
+    @SerializedName("monthlyInstallment")
+    val monthlyInstallment: Double = 0.0,
+    
+    @SerializedName("status")
+    val status: String,
     
     @SerializedName("purpose")
-    val purpose: String? = null
-)
+    val purpose: String? = null,
+    
+    @SerializedName("createdAt")
+    val createdAt: String? = null,
+    
+    @SerializedName("updatedAt")
+    val updatedAt: String? = null
+) {
+    // Helper to get effective tenor (tenorMonth or tenor)
+    fun getEffectiveTenor(): Int = tenorMonth ?: tenor
+    
+    // Helper to get effective interest rate (actualInterestRate or interestRate)
+    fun getEffectiveInterestRate(): Double = actualInterestRate ?: interestRate
+}

@@ -22,6 +22,14 @@ interface AuthRepository {
     suspend fun login(credentials: LoginCredentials): Resource<UserSession>
     
     /**
+     * Login with Google using Firebase ID Token
+     * @param idToken Firebase ID Token from Google Sign-In
+     * @param fcmToken Optional FCM token for push notifications
+     * @return Resource containing UserSession on success
+     */
+    suspend fun loginWithGoogle(idToken: String, fcmToken: String?): Resource<UserSession>
+    
+    /**
      * Register new user
      * @param data Registration data
      * @return Resource containing User on success

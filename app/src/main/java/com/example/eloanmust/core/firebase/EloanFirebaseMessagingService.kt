@@ -13,10 +13,12 @@ import com.example.eloanmust.R
 import com.example.eloanmust.core.common.Constants
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
+import com.example.eloanmust.feature.notification.data.mapper.toNotificationEntity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -31,12 +33,17 @@ class EloanFirebaseMessagingService : FirebaseMessagingService() {
     @Inject
     lateinit var fcmTokenManager: FcmTokenManager
     
+    @Inject
+    lateinit var notificationRepository: com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
+    
+    @Inject
+    lateinit var tokenManager: com.example.eloanmust.core.datastore.TokenManager
+    
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
     
     companion object {
-        private const val CHANNEL_ID = "eloan_notifications"
-        private const val CHANNEL_NAME = "E-Loan Notifications"
-        private const val CHANNEL_DESCRIPTION = "Notifications for loan status updates"
+        private const val CHANNEL_ID = Constants.NotificationChannel.CHANNEL_ID
+        private const val CHANNEL_NAME = Constants.NotificationChannel.CHANNEL_NAME
         
         // Notification data keys
         private const val KEY_LOAN_ID = "loanId"
@@ -48,6 +55,7 @@ class EloanFirebaseMessagingService : FirebaseMessagingService() {
     
     override fun onCreate() {
         super.onCreate()
+        // Channel is now created in Application class, but we keep this as backup
         createNotificationChannel()
     }
     
@@ -80,21 +88,41 @@ class EloanFirebaseMessagingService : FirebaseMessagingService() {
         super.onMessageReceived(remoteMessage)
         
         Timber.d("FCM Message received from: ${remoteMessage.from}")
+        Timber.d("FCM Data payload: ${remoteMessage.data}")
+        Timber.d("FCM Notification payload: ${remoteMessage.notification?.title} - ${remoteMessage.notification?.body}")
         
-        // Check if message contains data payload
-        if (remoteMessage.data.isNotEmpty()) {
-            Timber.d("Message data payload: ${remoteMessage.data}")
-            handleDataMessage(remoteMessage.data)
+        // Save notification to local database (background thread)
+        serviceScope.launch {
+            try {
+                val userId = tokenManager.userId.first() ?: 0L
+                if (userId > 0) {
+                    val notificationEntity = remoteMessage.toNotificationEntity(userId)
+                    notificationRepository.saveNotification(notificationEntity)
+                    Timber.d("Notification saved to database: ${notificationEntity.message}")
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to save notification to database")
+            }
         }
         
-        // Check if message contains notification payload
-        remoteMessage.notification?.let { notification ->
-            Timber.d("Message notification: ${notification.title} - ${notification.body}")
-            showNotification(
-                title = notification.title ?: "E-Loan Must",
-                body = notification.body ?: "",
-                data = remoteMessage.data
-            )
+        // Prioritize data payload for notification display
+        val data = remoteMessage.data
+        val hasDataPayload = data.isNotEmpty() && data.containsKey(KEY_NOTIFICATION_TYPE)
+        
+        if (hasDataPayload) {
+            // Use data payload - this is preferred as it gives us more control
+            Timber.d("Handling data message payload")
+            handleDataMessage(data)
+        } else {
+            // Fallback to notification payload if no data payload
+            remoteMessage.notification?.let { notification ->
+                Timber.d("Handling notification payload (no data)")
+                showNotification(
+                    title = notification.title ?: "E-Loan Must",
+                    body = notification.body ?: "",
+                    data = data
+                )
+            }
         }
     }
     
@@ -110,11 +138,17 @@ class EloanFirebaseMessagingService : FirebaseMessagingService() {
         
         Timber.d("Notification type: $notificationType, Loan ID: $loanId, Status: $status")
         
-        // Show notification if data contains title and body
-        if (!title.isNullOrBlank() && !body.isNullOrBlank()) {
+        // Generate title from notification type if not provided
+        val displayTitle = title ?: getTitleFromType(notificationType)
+        
+        // Use body from data or generate from type
+        val displayBody = body ?: getDefaultMessageFromType(notificationType, loanId)
+        
+        // Show notification with proper title and body
+        if (displayTitle.isNotBlank() && displayBody.isNotBlank()) {
             showNotification(
-                title = title,
-                body = body,
+                title = displayTitle,
+                body = displayBody,
                 data = data
             )
         }
@@ -136,6 +170,37 @@ class EloanFirebaseMessagingService : FirebaseMessagingService() {
             Constants.NotificationType.LOAN_DISBURSED -> {
                 Timber.d("Loan disbursed notification for loan: $loanId")
             }
+        }
+    }
+    
+    /**
+     * Get display title from notification type
+     */
+    private fun getTitleFromType(type: String?): String {
+        return when (type) {
+            Constants.NotificationType.LOAN_SUBMITTED -> "Pengajuan Diterima"
+            Constants.NotificationType.LOAN_REVIEWED -> "Telah Ditinjau"
+            "LOAN_IN_REVIEW" -> "Sedang Ditinjau"
+            Constants.NotificationType.LOAN_APPROVED -> "Pinjaman Disetujui"
+            Constants.NotificationType.LOAN_REJECTED -> "Pinjaman Ditolak"
+            Constants.NotificationType.LOAN_DISBURSED -> "Dana Dicairkan"
+            else -> "E-Loan Must"
+        }
+    }
+    
+    /**
+     * Get default message from notification type
+     */
+    private fun getDefaultMessageFromType(type: String?, loanId: String?): String {
+        val loanInfo = if (!loanId.isNullOrBlank()) " untuk pengajuan #$loanId" else ""
+        return when (type) {
+            Constants.NotificationType.LOAN_SUBMITTED -> "Pengajuan pinjaman Anda$loanInfo telah berhasil dikirim."
+            Constants.NotificationType.LOAN_REVIEWED -> "Pengajuan pinjaman Anda$loanInfo telah selesai ditinjau."
+            "LOAN_IN_REVIEW" -> "Pengajuan pinjaman Anda$loanInfo sedang dalam proses peninjauan."
+            Constants.NotificationType.LOAN_APPROVED -> "Selamat! Pengajuan pinjaman Anda$loanInfo telah disetujui."
+            Constants.NotificationType.LOAN_REJECTED -> "Maaf, pengajuan pinjaman Anda$loanInfo belum dapat disetujui."
+            Constants.NotificationType.LOAN_DISBURSED -> "Dana pinjaman Anda$loanInfo telah dicairkan ke rekening."
+            else -> "Ada pembaruan terbaru untuk aplikasi pinjaman Anda."
         }
     }
     
@@ -231,7 +296,7 @@ class EloanFirebaseMessagingService : FirebaseMessagingService() {
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_HIGH
             ).apply {
-                description = CHANNEL_DESCRIPTION
+                description = Constants.NotificationChannel.CHANNEL_DESCRIPTION
                 enableLights(true)
                 enableVibration(true)
             }

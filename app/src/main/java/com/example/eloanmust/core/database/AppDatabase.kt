@@ -23,7 +23,7 @@ import com.example.eloanmust.feature.profile.data.local.ProfileEntity
         NotificationEntity::class,
         PlafondEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

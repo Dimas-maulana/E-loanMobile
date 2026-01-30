@@ -132,3 +132,38 @@ val StatusReviewed = Color(0xFF2196F3)
 val StatusApproved = Color(0xFF4CAF50)
 val StatusRejected = Color(0xFFF44336)
 val StatusDisbursed = Color(0xFF9C27B0)
+
+// Color utility object for accessing color collections
+object ELoanColors {
+    val gradientGold = listOf(GradientGoldStart, GradientGoldEnd)
+    val gradientDark = listOf(GradientDarkStart, GradientDarkEnd)
+}
+
+/**
+ * Get text color for loan status
+ */
+fun getLoanStatusColor(status: String): Color {
+    return when (status) {
+        "PENDING_REVIEW" -> StatusPending
+        "REVIEWED" -> StatusReviewed
+        "APPROVED" -> StatusApproved
+        "REJECTED" -> StatusRejected
+        "DISBURSED" -> StatusDisbursed
+        else -> StatusPending
+    }
+}
+
+/**
+ * Get background color for loan status badge
+ */
+fun getLoanStatusBackgroundColor(status: String): Color {
+    return when (status) {
+        "PENDING_REVIEW" -> StatusPending.copy(alpha = 0.15f)
+        "REVIEWED" -> StatusReviewed.copy(alpha = 0.15f)
+        "APPROVED" -> StatusApproved.copy(alpha = 0.15f)
+        "REJECTED" -> StatusRejected.copy(alpha = 0.15f)
+        "DISBURSED" -> StatusDisbursed.copy(alpha = 0.15f)
+        else -> StatusPending.copy(alpha = 0.15f)
+    }
+}
+

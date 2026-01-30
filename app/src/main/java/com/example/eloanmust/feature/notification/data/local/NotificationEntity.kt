@@ -4,20 +4,18 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 /**
- * Room entity for Notification.
+ * Room entity for Notification - matches api/notifications response
  */
 @Entity(tableName = "notifications")
 data class NotificationEntity(
     @PrimaryKey
     val id: Long,
-    val userId: Long,
-    val title: String,
-    val message: String,
+    val userId: Long? = null,
+    val loanApplicationId: Long? = null,
     val type: String,
-    val referenceId: Long?,
-    val referenceType: String?,
-    val isRead: Boolean,
-    val readAt: Long?,
-    val createdAt: Long,
+    val channel: String? = null,
+    val message: String,
+    val isRead: Boolean = false,
+    val createdAt: String? = null,
     val cachedAt: Long = System.currentTimeMillis()
 )

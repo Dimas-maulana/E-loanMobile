@@ -12,7 +12,20 @@
           "package_name": "com.example.eloanmust"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "511633081814-2kdnusqjpuqqkk3va2pmqta8n84eukpb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.eloanmust",
+            "certificate_hash": "5fc95bfb9cfcf9f8faa74eb4d960f2aea84c6b6a"
+          }
+        },
+        {
+          "client_id": "511633081814-us8egkao4lcqd7gsp0i5t2reai8nud8l.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyAix9NJeefwJTyVqGvwdHdrWGWNrgEBuF0"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "511633081814-us8egkao4lcqd7gsp0i5t2reai8nud8l.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

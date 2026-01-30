@@ -153,7 +153,7 @@ fun EloanMustTheme(
 // ============================================
 
 // Extended color properties for semantic colors
-object ELoanColors {
+object ELoanExtendedColors {
     val success = SuccessMain
     val successLight = SuccessLight
     val successDark = SuccessDark
@@ -176,32 +176,5 @@ object ELoanColors {
     val statusApproved = StatusApproved
     val statusRejected = StatusRejected
     val statusDisbursed = StatusDisbursed
-    
-    // Gradient Colors
-    val gradientGold = listOf(GradientGoldStart, GradientGoldEnd)
-    val gradientDark = listOf(GradientDarkStart, GradientDarkEnd)
 }
 
-// Extension to get loan status color
-fun getLoanStatusColor(status: String): Color {
-    return when (status.uppercase()) {
-        "PENDING_REVIEW" -> StatusPending
-        "REVIEWED" -> StatusReviewed
-        "APPROVED" -> StatusApproved
-        "REJECTED" -> StatusRejected
-        "DISBURSED" -> StatusDisbursed
-        else -> StatusPending
-    }
-}
-
-// Extension to get loan status background color (lighter variant)
-fun getLoanStatusBackgroundColor(status: String): Color {
-    return when (status.uppercase()) {
-        "PENDING_REVIEW" -> WarningLight
-        "REVIEWED" -> InfoLight
-        "APPROVED" -> SuccessLight
-        "REJECTED" -> ErrorLight
-        "DISBURSED" -> Color(0xFFF3E5F5) // Light purple
-        else -> WarningLight
-    }
-}

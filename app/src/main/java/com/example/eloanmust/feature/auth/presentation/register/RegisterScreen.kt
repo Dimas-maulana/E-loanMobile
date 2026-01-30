@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material.icons.outlined.Lock
@@ -92,6 +93,28 @@ fun RegisterScreen(
                 else -> {}
             }
         }
+    }
+    
+    // Register Success Dialog
+    if (state.isSuccess) {
+        androidx.compose.material3.AlertDialog(
+            onDismissRequest = { viewModel.onEvent(RegisterEvent.DismissSuccessDialog) },
+            title = {
+                Text(text = "Registrasi Berhasil")
+            },
+            text = {
+                Text("Akun Anda telah berhasil dibuat. Silakan login untuk melanjutkan.")
+            },
+            confirmButton = {
+                androidx.compose.material3.TextButton(
+                    onClick = { viewModel.onEvent(RegisterEvent.DismissSuccessDialog) }
+                ) {
+                    Text("Login Sekarang", color = Gold70)
+                }
+            },
+            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface,
+            tonalElevation = 6.dp
+        )
     }
     
     Scaffold(
@@ -211,6 +234,66 @@ fun RegisterScreen(
                     supportingText = state.emailError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
                     keyboardOptions = KeyboardOptions(
                         keyboardType = KeyboardType.Email,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    ),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Gold70,
+                        focusedLabelColor = Gold70,
+                        cursorColor = Gold70
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Fullname Field
+                OutlinedTextField(
+                    value = state.fullname,
+                    onValueChange = { viewModel.onEvent(RegisterEvent.FullnameChanged(it)) },
+                    label = { Text("Nama Lengkap") },
+                    placeholder = { Text("Masukkan nama lengkap") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Person, null, tint = Gold70)
+                    },
+                    isError = state.fullnameError != null,
+                    supportingText = state.fullnameError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Text,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = { focusManager.moveFocus(FocusDirection.Down) }
+                    ),
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = Gold70,
+                        focusedLabelColor = Gold70,
+                        cursorColor = Gold70
+                    ),
+                    shape = RoundedCornerShape(12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
+                // Phone Field
+                OutlinedTextField(
+                    value = state.phone,
+                    onValueChange = { viewModel.onEvent(RegisterEvent.PhoneChanged(it)) },
+                    label = { Text("Nomor Telepon") },
+                    placeholder = { Text("Masukkan nomor telepon") },
+                    leadingIcon = {
+                        Icon(Icons.Default.Phone, null, tint = Gold70)
+                    },
+                    isError = state.phoneError != null,
+                    supportingText = state.phoneError?.let { { Text(it, color = MaterialTheme.colorScheme.error) } },
+                    keyboardOptions = KeyboardOptions(
+                        keyboardType = KeyboardType.Phone,
                         imeAction = ImeAction.Next
                     ),
                     keyboardActions = KeyboardActions(

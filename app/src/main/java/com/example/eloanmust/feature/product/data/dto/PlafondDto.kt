@@ -9,22 +9,22 @@ data class PlafondDto(
     @SerializedName("id")
     val id: Long,
     
-    @SerializedName("name")
+    @SerializedName("name", alternate = ["productName", "nama", "plafondName"])
     val name: String,
     
     @SerializedName("description")
     val description: String?,
     
-    @SerializedName("minAmount")
+    @SerializedName("minAmount", alternate = ["min_amount"])
     val minAmount: Double,
     
-    @SerializedName("maxAmount")
+    @SerializedName("maxAmount", alternate = ["max_amount"])
     val maxAmount: Double,
     
-    @SerializedName("interestRate")
+    @SerializedName("interestRate", alternate = ["interest_rate", "rate", "bunga"])
     val interestRate: Double,
     
-    @SerializedName("maxTenor")
+    @SerializedName("maxTenor", alternate = ["max_tenor", "tenor_max", "tenorMonth"])
     val maxTenor: Int,
     
     @SerializedName("isActive")

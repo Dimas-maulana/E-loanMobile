@@ -94,6 +94,15 @@ object Constants {
     }
     
     // ============================================
+    // NOTIFICATION CHANNELS
+    // ============================================
+    object NotificationChannel {
+        const val CHANNEL_ID = "eloan_notifications"
+        const val CHANNEL_NAME = "E-Loan Notifications"
+        const val CHANNEL_DESCRIPTION = "Notifications for loan status updates"
+    }
+    
+    // ============================================
     // NAVIGATION ROUTES
     // ============================================
     object Routes {

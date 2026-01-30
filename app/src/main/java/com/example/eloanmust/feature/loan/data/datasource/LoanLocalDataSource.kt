@@ -67,7 +67,7 @@ class LoanLocalDataSource @Inject constructor(
      * Clear loans for user
      */
     suspend fun clearLoansForUser(userId: Long) {
-        loanDao.clearLoansForUser(userId)
+        loanDao.deleteByUserId(userId)
     }
     
     /**

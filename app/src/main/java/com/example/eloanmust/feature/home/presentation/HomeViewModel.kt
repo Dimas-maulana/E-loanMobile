@@ -25,13 +25,15 @@ data class HomeState(
     val isLoggedIn: Boolean = false,
     val username: String = "User",
     val products: List<PlafondDto> = emptyList(),
+    val unreadNotificationCount: Int = 0,
     val error: String? = null
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val notificationRepository: com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
 ) : ViewModel() {
     
     private val _state = MutableStateFlow(HomeState())
@@ -43,6 +45,7 @@ class HomeViewModel @Inject constructor(
     init {
         checkLoginStatus()
         loadProducts()
+        observeUnreadNotifications()
     }
     
     private fun checkLoginStatus() {
@@ -50,6 +53,22 @@ class HomeViewModel @Inject constructor(
             val isLoggedIn = tokenManager.isLoggedIn.first()
             val username = tokenManager.username.first() ?: "User"
             _state.update { it.copy(isLoggedIn = isLoggedIn, username = username) }
+        }
+    }
+    
+    private fun observeUnreadNotifications() {
+        viewModelScope.launch {
+            try {
+                val isLoggedIn = tokenManager.isLoggedIn.first()
+                if (isLoggedIn) {
+                    notificationRepository.getUnreadCount().collect { count ->
+                        _state.update { it.copy(unreadNotificationCount = count) }
+                    }
+                }
+            } catch (e: Exception) {
+                Timber.e(e, "Error observing unread notifications")
+                // Don't crash, just ignore the error
+            }
         }
     }
     

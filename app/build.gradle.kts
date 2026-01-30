@@ -21,13 +21,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Build Config Fields
-        buildConfigField("String", "BASE_URL", "\"http://10.10.90.149:8081/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.10.90.193:8081/\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"http://10.10.90.149:8081/\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.10.90.193:8081/\"")
         }
         release {
             isMinifyEnabled = true
@@ -105,6 +105,11 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
+    implementation(libs.firebase.auth)
+    
+    // Google Play Services Auth (for Google Sign-In)
+    implementation(libs.play.services.auth)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // Coil
     implementation(libs.coil.compose)

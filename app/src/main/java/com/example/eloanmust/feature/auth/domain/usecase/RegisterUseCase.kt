@@ -36,6 +36,14 @@ class RegisterUseCase @Inject constructor(
             return Resource.Error("Format email tidak valid")
         }
         
+        if (data.fullname.isBlank()) {
+            return Resource.Error("Nama lengkap tidak boleh kosong")
+        }
+        
+        if (data.phone.isBlank()) {
+            return Resource.Error("Nomor telepon tidak boleh kosong")
+        }
+        
         if (data.password.isBlank()) {
             return Resource.Error("Password tidak boleh kosong")
         }

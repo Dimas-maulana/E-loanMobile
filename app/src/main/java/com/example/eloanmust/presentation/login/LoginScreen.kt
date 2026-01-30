@@ -45,6 +45,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.eloanmust.R
 import com.example.eloanmust.ui.theme.EloanMustTheme
+import com.google.firebase.messaging.FirebaseMessaging
+import timber.log.Timber
 
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, navController: NavController? = null) {
@@ -150,7 +152,20 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController? = n
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(
-            onClick = { navController?.navigate("home") },
+            onClick = {
+                // Simulate sending token to backend and receiving push notification
+                FirebaseMessaging.getInstance().token.addOnCompleteListener { task ->
+                    if (!task.isSuccessful) {
+                        Timber.w(task.exception, "Fetching FCM registration token failed")
+                        return@addOnCompleteListener
+                    }
+
+                    // Get new FCM registration token
+                    val token = task.result
+                    Timber.d("FCM Token for Testing: $token")
+                }
+                navController?.navigate("home")
+            },
             modifier = Modifier
                 .fillMaxWidth()
                 .height(50.dp),

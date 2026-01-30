@@ -20,6 +20,18 @@ interface NotificationDao {
     fun getNotifications(userId: Long): Flow<List<NotificationEntity>>
     
     /**
+     * Get all notifications regardless of userId (for debugging/fallback)
+     */
+    @Query("SELECT * FROM notifications ORDER BY createdAt DESC")
+    fun getAllNotifications(): Flow<List<NotificationEntity>>
+    
+    /**
+     * Get all notifications sync (for debugging)
+     */
+    @Query("SELECT * FROM notifications ORDER BY createdAt DESC")
+    suspend fun getAllNotificationsSync(): List<NotificationEntity>
+    
+    /**
      * Get all notifications (sync)
      */
     @Query("SELECT * FROM notifications WHERE userId = :userId ORDER BY createdAt DESC")
@@ -36,6 +48,12 @@ interface NotificationDao {
      */
     @Query("SELECT COUNT(*) FROM notifications WHERE userId = :userId AND isRead = 0")
     fun getUnreadCount(userId: Long): Flow<Int>
+    
+    /**
+     * Get all unread count regardless of userId (for debugging/fallback)
+     */
+    @Query("SELECT COUNT(*) FROM notifications WHERE isRead = 0")
+    fun getAllUnreadCount(): Flow<Int>
     
     /**
      * Get unread count (sync)
@@ -64,14 +82,14 @@ interface NotificationDao {
     /**
      * Mark notification as read
      */
-    @Query("UPDATE notifications SET isRead = 1, readAt = :readAt WHERE id = :notificationId")
-    suspend fun markAsRead(notificationId: Long, readAt: Long)
+    @Query("UPDATE notifications SET isRead = 1 WHERE id = :notificationId")
+    suspend fun markAsRead(notificationId: Long)
     
     /**
      * Mark all notifications as read
      */
-    @Query("UPDATE notifications SET isRead = 1, readAt = :readAt WHERE userId = :userId AND isRead = 0")
-    suspend fun markAllAsRead(userId: Long, readAt: Long)
+    @Query("UPDATE notifications SET isRead = 1 WHERE userId = :userId AND isRead = 0")
+    suspend fun markAllAsRead(userId: Long)
     
     /**
      * Delete notification by ID

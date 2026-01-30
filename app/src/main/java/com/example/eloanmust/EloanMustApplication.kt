@@ -24,5 +24,29 @@ class EloanMustApplication : Application() {
         FirebaseApp.initializeApp(this)
         
         Timber.d("E-Loan Must Application initialized")
+        
+        createNotificationChannel()
+    }
+    
+    private fun createNotificationChannel() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            val channelId = com.example.eloanmust.core.common.Constants.NotificationChannel.CHANNEL_ID
+            val channelName = com.example.eloanmust.core.common.Constants.NotificationChannel.CHANNEL_NAME
+            val channelDescription = com.example.eloanmust.core.common.Constants.NotificationChannel.CHANNEL_DESCRIPTION
+            
+            val channel = android.app.NotificationChannel(
+                channelId,
+                channelName,
+                android.app.NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = channelDescription
+                enableLights(true)
+                enableVibration(true)
+            }
+            
+            val notificationManager = getSystemService(android.app.NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+            Timber.d("Notification channel created: $channelId")
+        }
     }
 }

@@ -34,4 +34,10 @@ abstract class RepositoryModule {
     abstract fun bindLoanRepository(
         loanRepositoryImpl: LoanRepositoryImpl
     ): LoanRepository
+    
+    @Binds
+    @Singleton
+    abstract fun bindNotificationRepository(
+        notificationRepositoryImpl: com.example.eloanmust.feature.notification.data.repository.NotificationRepositoryImpl
+    ): com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
 }

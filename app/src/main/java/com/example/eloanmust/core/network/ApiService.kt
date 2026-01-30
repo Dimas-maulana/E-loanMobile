@@ -1,6 +1,7 @@
 package com.example.eloanmust.core.network
 
 import com.example.eloanmust.feature.auth.data.dto.ForgotPasswordRequest
+import com.example.eloanmust.feature.auth.data.dto.GoogleAuthRequest
 import com.example.eloanmust.feature.auth.data.dto.LoginRequest
 import com.example.eloanmust.feature.auth.data.dto.LoginResponse
 import com.example.eloanmust.feature.auth.data.dto.RegisterRequest
@@ -16,11 +17,14 @@ import com.example.eloanmust.feature.product.data.dto.PlafondDto
 import com.example.eloanmust.feature.profile.data.dto.CustomerProfileDto
 import com.example.eloanmust.feature.profile.data.dto.CustomerProfileRequest
 import com.example.eloanmust.feature.profile.data.dto.ProfileStatusResponse
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -40,6 +44,14 @@ interface ApiService {
     @POST("api/auth/login")
     suspend fun login(
         @Body request: LoginRequest
+    ): Response<ApiResponse<LoginResponse>>
+    
+    /**
+     * Login with Google using Firebase ID Token
+     */
+    @POST("api/auth/google")
+    suspend fun loginWithGoogle(
+        @Body request: GoogleAuthRequest
     ): Response<ApiResponse<LoginResponse>>
     
     /**
@@ -89,6 +101,15 @@ interface ApiService {
     suspend fun updateProfile(
         @Body request: CustomerProfileRequest
     ): Response<ApiResponse<CustomerProfileDto>>
+
+    /**
+     * Upload KTP image
+     */
+    @Multipart
+    @POST("api/profile/upload-ktp")
+    suspend fun uploadKtp(
+        @Part file: MultipartBody.Part
+    ): Response<ApiResponse<String>>
     
     /**
      * Get KTP image (Base64)
@@ -125,7 +146,7 @@ interface ApiService {
      */
     @GET("api/plafonds/detect")
     suspend fun detectPlafond(
-        @Query("amount") amount: Double
+        @Query("amount") amount: Long
     ): Response<ApiResponse<PlafondDto>>
     
     // ============================================
@@ -188,7 +209,7 @@ interface ApiService {
      * Mark notification as read
      */
     @PUT("api/notifications/{id}/read")
-    suspend fun markAsRead(
+    suspend fun markNotificationAsRead(
         @Path("id") id: Long
     ): Response<ApiResponse<Unit>>
     
@@ -196,5 +217,5 @@ interface ApiService {
      * Mark all notifications as read
      */
     @PUT("api/notifications/read-all")
-    suspend fun markAllAsRead(): Response<ApiResponse<Unit>>
+    suspend fun markAllNotificationsAsRead(): Response<ApiResponse<Unit>>
 }
