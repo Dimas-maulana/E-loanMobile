@@ -163,7 +163,7 @@ class LoanSimulationViewModel @Inject constructor(
             is LoanSimulationEvent.DismissConfirmDialog -> _state.update { it.copy(showConfirmDialog = false) }
             is LoanSimulationEvent.ConfirmApplyLoan -> {
                 _state.update { it.copy(showConfirmDialog = false) }
-                applyLoan()
+                applyLoan(event.latitude, event.longitude)
             }
             is LoanSimulationEvent.ApplyLoan -> showConfirmDialog()
             is LoanSimulationEvent.DismissSuccess -> _state.update { it.copy(isSuccess = false, loanResult = null) }
@@ -397,7 +397,7 @@ class LoanSimulationViewModel @Inject constructor(
         }
     }
 
-    private fun applyLoan() {
+    private fun applyLoan(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             val currentState = _state.value
             
@@ -411,10 +411,11 @@ class LoanSimulationViewModel @Inject constructor(
             
             _state.update { it.copy(isSubmitting = true) }
             
-            // Use the new simplified request with only amount and tenorMonth
             val request = LoanApplicationRequest(
                 amount = amountDouble,
-                tenorMonth = tenorInt
+                tenorMonth = tenorInt,
+                latitude = latitude,
+                longitude = longitude
             )
             
             val result = safeApiCall { apiService.applyLoan(request) }
@@ -446,7 +447,7 @@ sealed class LoanSimulationEvent {
     data object Simulate : LoanSimulationEvent()
     data object ShowConfirmDialog : LoanSimulationEvent()
     data object DismissConfirmDialog : LoanSimulationEvent()
-    data object ConfirmApplyLoan : LoanSimulationEvent()
+    data class ConfirmApplyLoan(val latitude: Double, val longitude: Double) : LoanSimulationEvent()
     data object ApplyLoan : LoanSimulationEvent()
     data object DismissSuccess : LoanSimulationEvent()
 }

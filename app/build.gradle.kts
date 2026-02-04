@@ -21,13 +21,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Build Config Fields
-        buildConfigField("String", "BASE_URL", "\"http://10.10.90.193:8081/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.10.90.144:8081/\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"http://10.10.90.193:8081/\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.10.90.144:8081/\"")
         }
         release {
             isMinifyEnabled = true
@@ -109,6 +109,7 @@ dependencies {
     
     // Google Play Services Auth (for Google Sign-In)
     implementation(libs.play.services.auth)
+    implementation(libs.play.services.location)
     implementation(libs.kotlinx.coroutines.play.services)
 
     // Coil

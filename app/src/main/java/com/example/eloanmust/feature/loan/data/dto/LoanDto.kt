@@ -54,7 +54,13 @@ data class LoanApplicationRequest(
     val amount: Double,
     
     @SerializedName("tenorMonth")
-    val tenorMonth: Int
+    val tenorMonth: Int,
+
+    @SerializedName("latitude")
+    val latitude: Double? = null,
+
+    @SerializedName("longitude")
+    val longitude: Double? = null
 )
 
 /**

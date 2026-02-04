@@ -103,7 +103,7 @@ class LoanApplyViewModel @Inject constructor(
             is LoanApplyEvent.PlafondSelected -> {
                 _state.update { it.copy(selectedPlafond = event.plafond) }
             }
-            is LoanApplyEvent.Submit -> submitApplication()
+            is LoanApplyEvent.Submit -> submitApplication(event.latitude, event.longitude)
             is LoanApplyEvent.DismissSuccessDialog -> {
                 _state.update { it.copy(isSuccess = false) }
                 viewModelScope.launch {
@@ -125,7 +125,7 @@ class LoanApplyViewModel @Inject constructor(
         }
     }
     
-    private fun submitApplication() {
+    private fun submitApplication(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             val currentState = _state.value
             
@@ -144,11 +144,6 @@ class LoanApplyViewModel @Inject constructor(
                 _state.update { it.copy(tenorError = "Masukkan tenor yang valid") }
                 hasError = true
             }
-            
-            if (currentState.purpose.isBlank()) {
-                _state.update { it.copy(purposeError = "Masukkan tujuan pinjaman") }
-                hasError = true
-            }
 
             // Plafond Limit Validation
             currentState.selectedPlafond?.let { plafond ->
@@ -157,8 +152,9 @@ class LoanApplyViewModel @Inject constructor(
                     hasError = true
                 }
                 
-                if (tenor != null && (tenor > (plafond.maxTenor ?: 60))) {
-                     _state.update { it.copy(tenorError = "Maksimal tenor adalah ${plafond.maxTenor} bulan") }
+                val effectiveMaxTenor = if ((plafond.maxTenor ?: 0) > 0) plafond.maxTenor!! else 60
+                if (tenor != null && tenor > effectiveMaxTenor) {
+                     _state.update { it.copy(tenorError = "Maksimal tenor adalah $effectiveMaxTenor bulan") }
                      hasError = true
                 }
             }
@@ -174,7 +170,9 @@ class LoanApplyViewModel @Inject constructor(
             
             val request = LoanApplicationRequest(
                 amount = amount!!,
-                tenorMonth = tenor!!
+                tenorMonth = tenor!!,
+                latitude = latitude,
+                longitude = longitude
             )
             
             val result = safeApiCall { apiService.applyLoan(request) }
@@ -200,6 +198,6 @@ sealed class LoanApplyEvent {
     data class TenorChanged(val value: String) : LoanApplyEvent()
     data class PurposeChanged(val value: String) : LoanApplyEvent()
     data class PlafondSelected(val plafond: PlafondDto) : LoanApplyEvent()
-    data object Submit : LoanApplyEvent()
+    data class Submit(val latitude: Double, val longitude: Double) : LoanApplyEvent()
     data object DismissSuccessDialog : LoanApplyEvent()
 }

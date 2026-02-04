@@ -307,32 +307,68 @@ fun LoanApplyScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
                 
-                Spacer(modifier = Modifier.height(16.dp))
-                
-                // Purpose Input
-                OutlinedTextField(
-                    value = state.purpose,
-                    onValueChange = { viewModel.onEvent(LoanApplyEvent.PurposeChanged(it)) },
-                    label = { Text("Tujuan Pinjaman") },
-                    placeholder = { Text("Contoh: Modal usaha, biaya pendidikan, dll") },
-                    isError = state.purposeError != null,
-                    supportingText = state.purposeError?.let { { Text(it) } },
-                    minLines = 2,
-                    maxLines = 4,
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = Gold70,
-                        focusedLabelColor = Gold70,
-                        cursorColor = Gold70
-                    ),
-                    shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                )
-                
                 Spacer(modifier = Modifier.height(24.dp))
                 
                 // Submit Button
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val fusedLocationClient = remember { 
+                    com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context) 
+                }
+                
+                val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+                    androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+                ) { permissions ->
+                    val isGranted = permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) ||
+                                    permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false)
+                    
+                    if (isGranted) {
+                         try {
+                            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                if (location != null) {
+                                    viewModel.onEvent(LoanApplyEvent.Submit(location.latitude, location.longitude))
+                                } else {
+                                     // Try to get current location if lastLocation is null
+                                     // For simplicity in this iteration, we show a message, or we could request updates.
+                                     // A more robust app would request location updates here.
+                                    android.widget.Toast.makeText(context, "Gagal mendapatkan lokasi. Pastikan GPS aktif.", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } catch (e: SecurityException) {
+                            // Should not happen if permission granted
+                        }
+                    } else {
+                        android.widget.Toast.makeText(context, "Izin lokasi diperlukan untuk mengajukan pinjaman", android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
+
                 Button(
-                    onClick = { viewModel.onEvent(LoanApplyEvent.Submit) },
+                    onClick = { 
+                        if (androidx.core.app.ActivityCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                            androidx.core.app.ActivityCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.ACCESS_COARSE_LOCATION
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ) {
+                            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                if (location != null) {
+                                    viewModel.onEvent(LoanApplyEvent.Submit(location.latitude, location.longitude))
+                                } else {
+                                    // Handle null location
+                                    android.widget.Toast.makeText(context, "Gagal mendapatkan lokasi. Coba buka Google Maps dulu untuk memancing GPS.", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } else {
+                            permissionLauncher.launch(
+                                arrayOf(
+                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                        }
+                    },
                     enabled = !state.isSubmitting && state.isProfileComplete,
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Gold70,

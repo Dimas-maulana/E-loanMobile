@@ -95,6 +95,7 @@ firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 
 # Google Play Services Auth
 play-services-auth = { group = "com.google.android.gms", name = "play-services-auth", version = "21.3.0" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version = "21.3.0" }
 
 # Kotlin Coroutines Play Services
 kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version = "1.7.3" }

@@ -101,6 +101,35 @@ fun LoanSimulationScreen(
         }
     }
     
+    // Location client for loan submission
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val fusedLocationClient = remember { 
+        com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context) 
+    }
+    
+    val locationPermissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        val isGranted = permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) ||
+                        permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false)
+        
+        if (isGranted) {
+            try {
+                fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                    if (location != null) {
+                        viewModel.onEvent(LoanSimulationEvent.ConfirmApplyLoan(location.latitude, location.longitude))
+                    } else {
+                        android.widget.Toast.makeText(context, "Gagal mendapatkan lokasi. Pastikan GPS aktif.", android.widget.Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: SecurityException) {
+                android.widget.Toast.makeText(context, "Error getting location", android.widget.Toast.LENGTH_LONG).show()
+            }
+        } else {
+            android.widget.Toast.makeText(context, "Izin lokasi diperlukan untuk mengajukan pinjaman", android.widget.Toast.LENGTH_LONG).show()
+        }
+    }
+    
     // Confirmation Dialog
     if (state.showConfirmDialog) {
         AlertDialog(
@@ -159,7 +188,33 @@ fun LoanSimulationScreen(
             },
             confirmButton = {
                 Button(
-                    onClick = { viewModel.onEvent(LoanSimulationEvent.ConfirmApplyLoan) },
+                    onClick = { 
+                        // Request location permission and then submit
+                        if (androidx.core.app.ActivityCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.ACCESS_FINE_LOCATION
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED ||
+                            androidx.core.app.ActivityCompat.checkSelfPermission(
+                                context,
+                                android.Manifest.permission.ACCESS_COARSE_LOCATION
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ) {
+                            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                                if (location != null) {
+                                    viewModel.onEvent(LoanSimulationEvent.ConfirmApplyLoan(location.latitude, location.longitude))
+                                } else {
+                                    android.widget.Toast.makeText(context, "Gagal mendapatkan lokasi. Coba buka Google Maps dulu.", android.widget.Toast.LENGTH_LONG).show()
+                                }
+                            }
+                        } else {
+                            locationPermissionLauncher.launch(
+                                arrayOf(
+                                    android.Manifest.permission.ACCESS_FINE_LOCATION,
+                                    android.Manifest.permission.ACCESS_COARSE_LOCATION
+                                )
+                            )
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = Gold70, contentColor = Color.Black)
                 ) {
                     Text("Ya, Ajukan")
