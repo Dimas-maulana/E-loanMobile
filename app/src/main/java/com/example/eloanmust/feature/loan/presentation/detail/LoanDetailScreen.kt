@@ -1,6 +1,7 @@
 package com.example.eloanmust.feature.loan.presentation.detail
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,14 +94,27 @@ fun LoanDetailScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Gold70,
-                    titleContentColor = Color.Black,
-                    navigationIconContentColor = Color.Black
+                    containerColor = Color(0xFF0F172A),
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White
                 )
             )
         }
     ) { paddingValues ->
-        if (state.isLoading) {
+        // Background
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B)
+                        )
+                    )
+                )
+        ) {
+            if (state.isLoading) {
             Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = Gold70)
             }
@@ -122,6 +136,7 @@ fun LoanDetailScreen(
         }
     }
 }
+}
 
 @Composable
 private fun LoanDetailContent(
@@ -137,7 +152,7 @@ private fun LoanDetailContent(
         // Status Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(
@@ -191,27 +206,27 @@ private fun LoanDetailContent(
         // Details Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Detail Pinjaman", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text("Detail Pinjaman", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Color.White)
                 
                 Spacer(modifier = Modifier.height(12.dp))
                 
                 DetailRow(Icons.Default.Receipt, "ID Pinjaman", "#${loan.id}")
                 DetailRow(Icons.Default.AttachMoney, "Jumlah Pinjaman", loan.amount.toRupiah())
-                DetailRow(Icons.Default.CalendarMonth, "Tenor", "${loan.tenor} bulan")
-                DetailRow(Icons.Default.AttachMoney, "Bunga", "${loan.interestRate}%")
+                DetailRow(Icons.Default.CalendarMonth, "Tenor", "${loan.getEffectiveTenor()} bulan")
+                DetailRow(Icons.Default.AttachMoney, "Bunga", "${loan.getEffectiveInterestRate()}%")
                 DetailRow(Icons.Default.AttachMoney, "Total Bunga", loan.totalInterest.toRupiah())
                 
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.1f))
                 
                 DetailRow(Icons.Default.AttachMoney, "Total Pembayaran", loan.totalPayment.toRupiah(), isHighlight = true)
                 DetailRow(Icons.Default.AttachMoney, "Cicilan/Bulan", loan.monthlyInstallment.toRupiah(), isHighlight = true)
                 
                 loan.createdAt?.let {
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.1f))
                     DetailRow(Icons.Default.AccessTime, "Tanggal Pengajuan", formatDate(it))
                 }
             }
@@ -222,15 +237,15 @@ private fun LoanDetailContent(
         
         Card(
             modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
             shape = RoundedCornerShape(16.dp)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
-                Text("Status Pengajuan", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                Text("Status Pengajuan", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Color.White)
                 Spacer(modifier = Modifier.height(12.dp))
                 
-                StatusTimelineItem("Pengajuan Diterima", isCompleted = true, isActive = loan.status == "PENDING_REVIEW")
-                StatusTimelineItem("Sedang Direview", isCompleted = loan.status in listOf("REVIEWED", "APPROVED", "REJECTED", "DISBURSED"), isActive = loan.status == "REVIEWED")
+                StatusTimelineItem("Pengajuan Diterima", isCompleted = true, isActive = loan.status in listOf("PENDING_REVIEW", "SUBMITTED"))
+                StatusTimelineItem("Sedang Direview", isCompleted = loan.status in listOf("REVIEWED", "APPROVED", "REJECTED", "DISBURSED"), isActive = loan.status in listOf("IN_REVIEW", "REVIEWED"))
                 StatusTimelineItem("Keputusan", isCompleted = loan.status in listOf("APPROVED", "REJECTED", "DISBURSED"), isActive = loan.status in listOf("APPROVED", "REJECTED"))
                 StatusTimelineItem("Dana Cair", isCompleted = loan.status == "DISBURSED", isActive = loan.status == "DISBURSED", isLast = true)
             }
@@ -255,13 +270,13 @@ private fun DetailRow(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(icon, null, tint = Gold70, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(8.dp))
-            Text(label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(label, style = MaterialTheme.typography.bodyMedium, color = Color.White.copy(alpha = 0.7f))
         }
         Text(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (isHighlight) FontWeight.Bold else FontWeight.Normal,
-            color = if (isHighlight) Gold70 else MaterialTheme.colorScheme.onSurface
+            color = if (isHighlight) Gold70 else Color.White
         )
     }
 }
@@ -283,7 +298,7 @@ private fun StatusTimelineItem(
                         when {
                             isActive -> Gold70
                             isCompleted -> Gold70.copy(alpha = 0.5f)
-                            else -> MaterialTheme.colorScheme.outline
+                            else -> Color.White.copy(alpha = 0.2f)
                         }
                     ),
                 contentAlignment = Alignment.Center
@@ -299,7 +314,7 @@ private fun StatusTimelineItem(
                         .height(32.dp)
                         .background(
                             if (isCompleted) Gold70.copy(alpha = 0.5f)
-                            else MaterialTheme.colorScheme.outline
+                            else Color.White.copy(alpha = 0.2f)
                         )
                 )
             }
@@ -311,7 +326,7 @@ private fun StatusTimelineItem(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = if (isActive) FontWeight.Bold else FontWeight.Normal,
-            color = if (isActive) Gold70 else MaterialTheme.colorScheme.onSurface,
+            color = if (isActive) Gold70 else Color.White.copy(alpha = 0.7f),
             modifier = Modifier.padding(top = 2.dp)
         )
     }

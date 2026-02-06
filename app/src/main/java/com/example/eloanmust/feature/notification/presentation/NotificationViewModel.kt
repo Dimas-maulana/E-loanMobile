@@ -47,28 +47,34 @@ class NotificationViewModel @Inject constructor(
     private fun checkLoginAndLoadNotifications() {
         viewModelScope.launch {
             try {
-                val isLoggedIn = tokenManager.isLoggedIn.first()
-                _state.update { it.copy(isLoggedIn = isLoggedIn) }
-                
-                if (isLoggedIn) {
-                    // First, refresh from API to get latest data
-                    refreshNotificationsFromApi()
+                // Observe login state
+                tokenManager.isLoggedIn.collect { isLoggedIn ->
+                    _state.update { it.copy(isLoggedIn = isLoggedIn) }
                     
-                    // Then, observe local database changes (reactive)
-                    notificationRepository.getNotifications().collect { notifications ->
-                        Timber.d("NotificationViewModel: Collected ${notifications.size} notifications from DB")
-                        val unreadCount = notifications.count { !it.isRead }
-                        _state.update { 
-                            it.copy(
-                                notifications = notifications,
-                                unreadCount = unreadCount,
-                                isLoading = false
-                            )
+                    if (isLoggedIn) {
+                        // 1. Start observing DB immediately (Offline First)
+                        launch {
+                            notificationRepository.getNotifications().collect { notifications ->
+                                Timber.d("NotificationViewModel: Collected ${notifications.size} notifications from DB")
+                                val unreadCount = notifications.count { !it.isRead }
+                                _state.update { 
+                                    it.copy(
+                                        notifications = notifications,
+                                        unreadCount = unreadCount,
+                                        isLoading = false // Stop loading once we have data or empty list from DB
+                                    )
+                                }
+                            }
                         }
+                        
+                        // 2. Trigger API refresh in parallel
+                        launch {
+                            refreshNotificationsFromApi()
+                        }
+                    } else {
+                        Timber.d("NotificationViewModel: User not logged in")
+                        _state.update { it.copy(isLoading = false) }
                     }
-                } else {
-                    Timber.d("NotificationViewModel: User not logged in")
-                    _state.update { it.copy(isLoading = false) }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error in checkLoginAndLoadNotifications")

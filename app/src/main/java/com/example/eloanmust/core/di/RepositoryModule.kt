@@ -40,4 +40,13 @@ abstract class RepositoryModule {
     abstract fun bindNotificationRepository(
         notificationRepositoryImpl: com.example.eloanmust.feature.notification.data.repository.NotificationRepositoryImpl
     ): com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
+    
+    /**
+     * Binds PlafondRepository implementation
+     */
+    @Binds
+    @Singleton
+    abstract fun bindPlafondRepository(
+        plafondRepositoryImpl: com.example.eloanmust.feature.product.data.repository.PlafondRepositoryImpl
+    ): com.example.eloanmust.feature.product.domain.repository.PlafondRepository
 }

@@ -6,8 +6,10 @@ import androidx.room.TypeConverters
 import com.example.eloanmust.core.database.dao.LoanDao
 import com.example.eloanmust.core.database.dao.NotificationDao
 import com.example.eloanmust.core.database.dao.PlafondDao
+import com.example.eloanmust.core.database.dao.PendingLoanDao
 import com.example.eloanmust.core.database.dao.ProfileDao
 import com.example.eloanmust.feature.loan.data.local.LoanEntity
+import com.example.eloanmust.feature.loan.data.local.PendingLoanEntity
 import com.example.eloanmust.feature.notification.data.local.NotificationEntity
 import com.example.eloanmust.feature.product.data.local.PlafondEntity
 import com.example.eloanmust.feature.profile.data.local.ProfileEntity
@@ -21,9 +23,10 @@ import com.example.eloanmust.feature.profile.data.local.ProfileEntity
         ProfileEntity::class,
         LoanEntity::class,
         NotificationEntity::class,
-        PlafondEntity::class
+        PlafondEntity::class,
+        PendingLoanEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -48,6 +51,11 @@ abstract class AppDatabase : RoomDatabase() {
      * Plafond DAO for loan product caching
      */
     abstract fun plafondDao(): PlafondDao
+
+    /**
+     * Pending Loan DAO for offline loan applications
+     */
+    abstract fun pendingLoanDao(): PendingLoanDao
     
     companion object {
         const val DATABASE_NAME = "eloan_must_database"

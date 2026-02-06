@@ -158,9 +158,9 @@ fun LoginScreen(
                 .background(
                     Brush.verticalGradient(
                         colors = listOf(
-                            MaterialTheme.colorScheme.surface,
-                            MaterialTheme.colorScheme.surface,
-                            Gold70.copy(alpha = 0.1f)
+                            Color(0xFF0f172a),
+                            Color(0xFF1e293b),
+                            Gold70.copy(alpha = 0.15f)
                         )
                     )
                 )
@@ -176,22 +176,13 @@ fun LoginScreen(
                 Spacer(modifier = Modifier.height(48.dp))
                 
                 // Logo
-                Box(
+                Image(
+                    painter = painterResource(id = R.drawable.logo_wolf),
+                    contentDescription = "E-Loan Must Logo",
                     modifier = Modifier
-                        .size(100.dp)
+                        .size(120.dp)
                         .clip(RoundedCornerShape(24.dp))
-                        .background(
-                            Brush.linearGradient(ELoanColors.gradientGold)
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "E",
-                        style = MaterialTheme.typography.displayMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
+                )
                 
                 Spacer(modifier = Modifier.height(24.dp))
                 
@@ -200,13 +191,13 @@ fun LoginScreen(
                     text = "Selamat Datang",
                     style = MaterialTheme.typography.headlineMedium,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = Color.White
                 )
                 
                 Text(
                     text = "Masuk ke akun Anda",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = Color.White.copy(alpha = 0.7f)
                 )
                 
                 Spacer(modifier = Modifier.height(48.dp))
@@ -239,7 +230,13 @@ fun LoginScreen(
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedBorderColor = Gold70,
                         focusedLabelColor = Gold70,
-                        cursorColor = Gold70
+                        cursorColor = Gold70,
+                        unfocusedBorderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedLabelColor = Color.White.copy(alpha = 0.7f),
+                        focusedTextColor = Color.White,
+                        unfocusedTextColor = Color.White,
+                        focusedPlaceholderColor = Color.White.copy(alpha = 0.5f),
+                        unfocusedPlaceholderColor = Color.White.copy(alpha = 0.5f)
                     ),
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()

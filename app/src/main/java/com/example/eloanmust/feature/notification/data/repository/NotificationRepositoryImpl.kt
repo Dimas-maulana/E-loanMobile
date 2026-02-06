@@ -12,6 +12,7 @@ import com.example.eloanmust.feature.notification.data.mapper.toEntity
 import com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import timber.log.Timber
 import javax.inject.Inject
@@ -32,33 +33,38 @@ class NotificationRepositoryImpl @Inject constructor(
     
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     override fun getNotifications(): Flow<List<Notification>> {
-        // API already returns notifications for the authenticated user,
-        // so we don't need to filter by userId locally.
-        // This avoids userId mismatch issues between login response and notification API.
-        return notificationDao.getAllNotifications().map { entities -> 
-            Timber.d("NotificationRepository: Query returned ${entities.size} entities from DB")
-            
-            // Sort by createdAt descending (newest first)
-            entities.map { it.toDomain() }.sortedByDescending { 
-                it.createdAt
+        // Fetch ALL notifications and filter in memory to debug visibility issues
+        // This ensures we can see if data exists even if userId query is failing
+        return notificationDao.getAllNotifications().flatMapLatest { entities ->
+            tokenManager.userId.map { userId ->
+                val currentId = userId ?: 0L
+                Timber.d("NotificationRepository: Filtering ${entities.size} entities for userId: $currentId")
+                
+                val filtered = if (currentId == 0L) {
+                     // Fallback: If no user logged in (or id 0), show all (dev/debug safety)
+                     entities 
+                } else {
+                     entities.filter { it.userId == currentId }
+                }
+                
+                Timber.d("NotificationRepository: Returning ${filtered.size} notifications after filter")
+                filtered.map { it.toDomain() }
             }
         }
     }
     
     override fun getUnreadCount(): Flow<Int> {
-        // Use getAllUnreadCount for consistency with getNotifications
-        return notificationDao.getAllUnreadCount()
+        return tokenManager.userId.flatMapLatest { userId ->
+            val id = userId ?: 0L
+            notificationDao.getUnreadCount(id)
+        }
     }
     
     override suspend fun refreshNotifications(): Resource<Unit> {
         val currentUserId = getUserId()
         
-        if (currentUserId == 0L) {
-            Timber.w("Notification: User not logged in, skipping refresh")
-            return Resource.Success(Unit)
-        }
-        
-        Timber.d("Notification: Refreshing for currentUserId from TokenManager: $currentUserId")
+        // Even if userId is 0, we try to fetch if we have a token (safeApiCall handles 401)
+        Timber.d("Notification: Refreshing for currentUserId: $currentUserId")
         
         val result = safeApiCall { apiService.getNotifications() }
         
@@ -69,28 +75,15 @@ class NotificationRepositoryImpl @Inject constructor(
                 Timber.d("Notification: Received ${notifications.size} notifications from API")
                 
                 if (notifications.isNotEmpty()) {
-                    // Log each notification for debugging
-                    notifications.forEach { dto ->
-                        Timber.d("Notification API: id=${dto.id}, userId=${dto.userId}, type=${dto.type}, message=${dto.message}")
-                    }
-                    
-                    // Use the userId from API response if available, otherwise use currentUserId
+                    // Use currentUserId to ensure data is accessible by the local query
+                    // We prioritize the local session ID because the API call is authenticated for this user
                     val entities = notifications.map { dto ->
-                        val effectiveUserId = dto.userId ?: currentUserId
+                        val effectiveUserId = if (currentUserId > 0) currentUserId else (dto.userId ?: 0L)
                         dto.toEntity(effectiveUserId)
                     }
                     
-                    Timber.d("Notification: Saving ${entities.size} notifications to database")
+                    Timber.d("Notification: Saving ${entities.size} notifications to database for user $currentUserId")
                     notificationDao.insertNotifications(entities)
-                } else {
-                    Timber.w("Notification: API returned empty list")
-                }
-                
-                // Verify total saved data (without userId filter)
-                val allSaved = notificationDao.getAllNotificationsSync()
-                Timber.d("Notification: Total notifications in DB: ${allSaved.size}")
-                allSaved.forEach { entity ->
-                    Timber.d("Notification DB: id=${entity.id}, userId=${entity.userId}, type=${entity.type}")
                 }
                 
                 Resource.Success(Unit)

@@ -6,6 +6,7 @@ import com.example.eloanmust.core.database.AppDatabase
 import com.example.eloanmust.core.database.dao.LoanDao
 import com.example.eloanmust.core.database.dao.NotificationDao
 import com.example.eloanmust.core.database.dao.PlafondDao
+import com.example.eloanmust.core.database.dao.PendingLoanDao
 import com.example.eloanmust.core.database.dao.ProfileDao
 import dagger.Module
 import dagger.Provides
@@ -73,5 +74,14 @@ object DatabaseModule {
     @Singleton
     fun providePlafondDao(database: AppDatabase): PlafondDao {
         return database.plafondDao()
+    }
+
+    /**
+     * Provides PendingLoanDao instance
+     */
+    @Provides
+    @Singleton
+    fun providePendingLoanDao(database: AppDatabase): PendingLoanDao {
+        return database.pendingLoanDao()
     }
 }

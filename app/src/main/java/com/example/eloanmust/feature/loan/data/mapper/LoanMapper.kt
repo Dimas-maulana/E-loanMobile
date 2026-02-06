@@ -4,6 +4,7 @@ import com.example.eloanmust.feature.loan.data.dto.LoanApplicationRequest
 import com.example.eloanmust.feature.loan.data.dto.LoanDto
 import com.example.eloanmust.feature.loan.data.dto.LoanSimulationResponse
 import com.example.eloanmust.feature.loan.data.local.LoanEntity
+import com.example.eloanmust.feature.loan.data.local.PendingLoanEntity
 import com.example.eloanmust.feature.loan.domain.model.Loan
 import com.example.eloanmust.feature.loan.domain.model.LoanApplication
 import com.example.eloanmust.feature.loan.domain.model.LoanSimulation
@@ -108,7 +109,9 @@ fun LoanEntity.toDomain(): Loan {
 fun LoanApplication.toRequest(): LoanApplicationRequest {
     return LoanApplicationRequest(
         amount = this.amount,
-        tenorMonth = this.tenor
+        tenorMonth = this.tenor,
+        latitude = this.latitude,
+        longitude = this.longitude
     )
 }
 
@@ -165,3 +168,31 @@ fun List<LoanEntity>.toDtoList(): List<LoanDto> = map { it.toDto() }
  * Extension function to convert list of LoanDto to list of LoanEntity
  */
 fun List<LoanDto>.toEntityList(userId: Long): List<LoanEntity> = map { it.toEntity(userId) }
+
+/**
+ * Extension function to convert PendingLoanEntity to Loan domain model
+ */
+fun PendingLoanEntity.toDomain(): Loan {
+    return Loan(
+        id = -this.id, // Negative ID to indicate local pending item
+        userId = this.userId,
+        amount = this.amount,
+        tenor = this.tenorMonth, // PendingLoanEntity stores tenorMonth
+        interestRate = 0.0, // Not calculated yet
+        monthlyPayment = 0.0,
+        totalPayment = 0.0,
+        status = LoanStatus.PENDING_REVIEW, // Display as Submitted/Pending
+        productName = "Pending Sync...",
+        productId = null,
+        purpose = null,
+        notes = "Waiting for internet connection...",
+        reviewedBy = null,
+        reviewedAt = null,
+        approvedBy = null,
+        approvedAt = null,
+        disbursedAt = null,
+        rejectionReason = null,
+        createdAt = Date(this.createdAt),
+        updatedAt = Date(this.createdAt)
+    )
+}

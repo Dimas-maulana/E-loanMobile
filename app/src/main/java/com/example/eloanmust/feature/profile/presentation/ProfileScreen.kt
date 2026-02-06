@@ -1,7 +1,9 @@
 package com.example.eloanmust.feature.profile.presentation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -108,18 +110,30 @@ fun ProfileScreen(
                 actions = {
                     if (state.isLoggedIn && !state.isEditing) {
                         IconButton(onClick = { viewModel.onEvent(ProfileEvent.ToggleEdit) }) {
-                            Icon(Icons.Default.Edit, "Edit", tint = Color.Black)
+                            Icon(Icons.Default.Edit, "Edit", tint = Color.White)
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Gold70,
-                    titleContentColor = Color.Black
+                    containerColor = Color(0xFF0F172A),
+                    titleContentColor = Color.White
                 )
             )
         }
     ) { paddingValues ->
-        if (!state.isLoggedIn) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B)
+                        )
+                    )
+                )
+        ) {
+            if (!state.isLoggedIn) {
             // Not logged in - show login required
             LoginRequiredContent(
                 message = "Silakan login untuk melihat profil Anda",
@@ -274,7 +288,7 @@ fun ProfileScreen(
 
                         Card(
                             modifier = Modifier.fillMaxWidth().height(200.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color.LightGray.copy(alpha = 0.3f)),
+                            colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
                             shape = RoundedCornerShape(12.dp)
                         ) {
                             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -340,11 +354,11 @@ fun ProfileScreen(
                 // Bank Account Section
                 Card(
                     modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
                     shape = RoundedCornerShape(16.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Text("Rekening Bank", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                        Text("Rekening Bank", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Color.White)
                         Spacer(modifier = Modifier.height(12.dp))
                         
 
@@ -414,7 +428,11 @@ fun ProfileScreen(
                     onClick = { viewModel.onEvent(ProfileEvent.Logout) },
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error,
+                        containerColor = Color.White.copy(alpha = 0.05f)
+                    ),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.5f))
                 ) {
                     Icon(Icons.Default.Logout, null)
                     Spacer(Modifier.width(8.dp))
@@ -426,12 +444,13 @@ fun ProfileScreen(
         }
     }
 }
+}
 
 @Composable
 private fun ProfileHeader(username: String, email: String, isComplete: Boolean) {
     Card(
         modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1A1A1A)),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -482,23 +501,35 @@ private fun ProfileTextField(
     keyboardType: KeyboardType = KeyboardType.Text,
     minLines: Int = 1
 ) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        enabled = enabled,
-        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
-        minLines = minLines,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = Gold70,
-            focusedLabelColor = Gold70,
-            cursorColor = Gold70,
-            disabledBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
-            disabledTextColor = MaterialTheme.colorScheme.onSurface
-        ),
-        shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
-    )
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = label, 
+            style = MaterialTheme.typography.bodySmall, 
+            fontWeight = FontWeight.Medium,
+            color = Color.White.copy(alpha = 0.8f)
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier.fillMaxWidth(),
+            enabled = enabled,
+            keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+            minLines = minLines,
+            shape = RoundedCornerShape(8.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedTextColor = Color.White,
+                unfocusedTextColor = Color.White,
+                disabledTextColor = Color.White.copy(alpha = 0.7f),
+                focusedBorderColor = Color(0xFF3B82F6),
+                unfocusedBorderColor = Color.White.copy(alpha = 0.3f),
+                disabledBorderColor = Color.White.copy(alpha = 0.1f),
+                focusedContainerColor = Color.White.copy(alpha = 0.05f),
+                unfocusedContainerColor = Color.White.copy(alpha = 0.05f),
+                disabledContainerColor = Color.White.copy(alpha = 0.05f)
+            )
+        )
+    }
 }
 
 @Composable
@@ -545,3 +576,4 @@ private fun LoginRequiredContent(
         }
     }
 }
+

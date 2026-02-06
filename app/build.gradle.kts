@@ -21,13 +21,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Build Config Fields
-        buildConfigField("String", "BASE_URL", "\"http://10.10.90.144:8081/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.10.90.192:8081/\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"http://10.10.90.144:8081/\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.10.90.192:8081/\"")
         }
         release {
             isMinifyEnabled = true
@@ -86,6 +86,8 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.android.compiler)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.hilt.work)
+    ksp(libs.hilt.compiler)
 
     // Retrofit & OkHttp
     implementation(libs.retrofit.core)
@@ -115,6 +117,9 @@ dependencies {
     // Coil
     implementation(libs.coil.compose)
 
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Timber
     implementation(libs.timber)
 
@@ -127,6 +132,9 @@ dependencies {
 
     // Testing
     testImplementation(libs.junit)
+    testImplementation("org.mockito:mockito-core:5.8.0")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))

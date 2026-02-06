@@ -5,9 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.eloanmust.core.common.Resource
 import com.example.eloanmust.core.common.UiEvent
 import com.example.eloanmust.core.datastore.TokenManager
-import com.example.eloanmust.core.network.ApiService
-import com.example.eloanmust.core.network.safeApiCall
 import com.example.eloanmust.feature.product.data.dto.PlafondDto
+import com.example.eloanmust.feature.product.domain.repository.PlafondRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,12 +25,13 @@ data class HomeState(
     val username: String = "User",
     val products: List<PlafondDto> = emptyList(),
     val unreadNotificationCount: Int = 0,
-    val error: String? = null
+    val error: String? = null,
+    val isOffline: Boolean = false
 )
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    private val apiService: ApiService,
+    private val plafondRepository: PlafondRepository,
     private val tokenManager: TokenManager,
     private val notificationRepository: com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
 ) : ViewModel() {
@@ -72,25 +72,45 @@ class HomeViewModel @Inject constructor(
         }
     }
     
+    /**
+     * Load products with offline-first strategy.
+     * 1. Show cached products immediately
+     * 2. Fetch fresh data from API if online
+     * 3. Update UI with fresh data
+     */
     private fun loadProducts() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             
-            val result = safeApiCall {
-                apiService.getPlafonds()
-            }
-            
-            when (result) {
-                is Resource.Success -> {
-                    Timber.d("Loaded ${result.data.size} products")
-                    _state.update { it.copy(isLoading = false, products = result.data, error = null) }
-                }
-                is Resource.Error -> {
-                    Timber.e("Failed to load products: ${result.message}")
-                    _state.update { it.copy(isLoading = false, error = result.message) }
-                }
-                else -> {
-                    _state.update { it.copy(isLoading = false) }
+            plafondRepository.getPlafonds().collect { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        Timber.d("Home: Loaded ${result.data.size} products")
+                        _state.update { 
+                            it.copy(
+                                isLoading = false, 
+                                products = result.data, 
+                                error = null,
+                                isOffline = false
+                            ) 
+                        }
+                    }
+                    is Resource.Error -> {
+                        Timber.e("Home: Failed to load products: ${result.message}")
+                        _state.update { 
+                            it.copy(
+                                isLoading = false, 
+                                error = result.message,
+                                isOffline = result.message?.contains("koneksi") == true
+                            ) 
+                        }
+                    }
+                    is Resource.Loading -> {
+                        _state.update { it.copy(isLoading = true) }
+                    }
+                    else -> {
+                        _state.update { it.copy(isLoading = false) }
+                    }
                 }
             }
         }

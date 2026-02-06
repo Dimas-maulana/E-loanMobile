@@ -1,6 +1,7 @@
 package com.example.eloanmust.feature.notification.presentation
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -86,7 +87,7 @@ fun NotificationScreen(
             TopAppBar(
                 title = { 
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Notifikasi")
+                        Text("Notifikasi", color = Color.White)
                         if (state.isLoggedIn && state.unreadCount > 0) {
                             Spacer(Modifier.width(8.dp))
                             Box(
@@ -109,30 +110,43 @@ fun NotificationScreen(
                     if (state.isLoggedIn) {
                         if (state.unreadCount > 0) {
                             IconButton(onClick = { viewModel.markAllAsRead() }) {
-                                Icon(Icons.Default.DoneAll, "Mark all read", tint = Color.Black)
+                                Icon(Icons.Default.DoneAll, "Mark all read", tint = Color.White)
                             }
                         }
                         if (state.isLoading) {
                             CircularProgressIndicator(
                                 modifier = Modifier.size(24.dp).padding(end = 16.dp),
-                                color = Color.Black,
+                                color = Color.White,
                                 strokeWidth = 2.dp
                             )
                         } else {
                             IconButton(onClick = { viewModel.refresh() }) {
-                                Icon(Icons.Default.Refresh, "Refresh", tint = Color.Black)
+                                Icon(Icons.Default.Refresh, "Refresh", tint = Color.White)
                             }
                         }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Gold70,
-                    titleContentColor = Color.Black
+                    containerColor = Color(0xFF0f172a),
+                    titleContentColor = Color.White
                 )
             )
         }
     ) { paddingValues ->
-        if (!state.isLoggedIn) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0f172a),
+                            Color(0xFF1e293b)
+                        )
+                    )
+                )
+        ) {
+            if (!state.isLoggedIn) {
             // Not logged in - show login required
             LoginRequiredContent(
                 message = "Silakan login untuk melihat notifikasi Anda",
@@ -143,7 +157,7 @@ fun NotificationScreen(
             PullToRefreshBox(
                 isRefreshing = state.isRefreshing,
                 onRefresh = { viewModel.refresh() },
-                modifier = Modifier.padding(paddingValues)
+                modifier = Modifier.fillMaxSize()
             ) {
                 if (state.isLoading && state.notifications.isEmpty()) {
                     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -185,7 +199,7 @@ fun NotificationScreen(
         }
     }
 }
-
+}
 @Composable
 private fun NotificationCard(
     notification: Notification,
@@ -199,12 +213,12 @@ private fun NotificationCard(
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
             containerColor = if (notification.isRead) 
-                MaterialTheme.colorScheme.surface 
+                Color.White.copy(alpha = 0.05f) 
             else 
-                Gold70.copy(alpha = 0.1f)
+                Color.White.copy(alpha = 0.15f)
         ),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (notification.isRead) 1.dp else 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Row(
             modifier = Modifier.padding(16.dp),
@@ -232,7 +246,8 @@ private fun NotificationCard(
                         text = notification.getTitle(),
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = if (notification.isRead) FontWeight.Normal else FontWeight.Bold,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        color = Color.White
                     )
                     
                     if (!notification.isRead) {
@@ -250,7 +265,7 @@ private fun NotificationCard(
                 Text(
                     text = notification.message,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = Color.White.copy(alpha = 0.7f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -261,7 +276,7 @@ private fun NotificationCard(
                     Text(
                         text = formatDate(it),
                         style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                        color = Color.White.copy(alpha = 0.5f)
                     )
                 }
             }
@@ -283,13 +298,14 @@ private fun EmptyNotifications() {
             Text(
                 text = "Belum Ada Notifikasi",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "Notifikasi tentang status pinjaman Anda akan muncul di sini",
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
             )
         }
@@ -310,20 +326,21 @@ private fun LoginRequiredContent(
             Icon(
                 imageVector = Icons.Default.Notifications,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                tint = Color.White.copy(alpha = 0.5f),
                 modifier = Modifier.size(80.dp)
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Login Diperlukan",
                 style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = Color.White
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = message,
                 style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                color = Color.White.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(24.dp))

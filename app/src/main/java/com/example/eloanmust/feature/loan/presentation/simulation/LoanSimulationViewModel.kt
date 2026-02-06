@@ -7,11 +7,14 @@ import com.example.eloanmust.core.common.UiEvent
 import com.example.eloanmust.core.datastore.TokenManager
 import com.example.eloanmust.core.network.ApiService
 import com.example.eloanmust.core.network.safeApiCall
-import com.example.eloanmust.feature.loan.data.dto.LoanApplicationRequest
 import com.example.eloanmust.feature.loan.data.dto.LoanDto
 import com.example.eloanmust.feature.loan.data.dto.LoanSimulationRequest
 import com.example.eloanmust.feature.loan.data.dto.LoanSimulationResponse
+import com.example.eloanmust.feature.loan.domain.model.Loan
+import com.example.eloanmust.feature.loan.domain.model.LoanApplication
+import com.example.eloanmust.feature.loan.domain.repository.LoanRepository
 import com.example.eloanmust.feature.product.data.dto.PlafondDto
+import com.example.eloanmust.feature.product.domain.repository.PlafondRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
@@ -49,7 +52,9 @@ data class LoanSimulationState(
 @HiltViewModel
 class LoanSimulationViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val plafondRepository: PlafondRepository,
+    private val loanRepository: LoanRepository
 ) : ViewModel() {
     
     private val _state = MutableStateFlow(LoanSimulationState())
@@ -69,25 +74,47 @@ class LoanSimulationViewModel @Inject constructor(
         fetchAllPlafonds()
     }
     
+    /**
+     * Fetch plafonds with offline-first strategy.
+     * Uses cached plafonds for instant display, then updates from API if online.
+     */
     private fun fetchAllPlafonds() {
         viewModelScope.launch {
-            val result = safeApiCall { apiService.getPlafonds() }
-            if (result is Resource.Success && result.data != null) {
-                allPlafonds = result.data
-                Timber.d("LoanSim: Loaded ${allPlafonds.size} plafonds")
-                allPlafonds.forEach { Timber.d("LoanSim: Product ${it.name} Range: ${it.minAmount}-${it.maxAmount} MaxTenor: ${it.maxTenor}") }
-                
-                // Trigger initial detection/simulation after loading products
-                if (allPlafonds.isNotEmpty()) {
-                    val amountLong = _state.value.amount.replace("[^0-9]".toRegex(), "").toLongOrNull() ?: 5000000L
-                    detectLocalPlafond(amountLong)
-                    calculateLocalSimulation()
-                    triggerSimulation()
+            plafondRepository.getPlafonds().collect { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        allPlafonds = result.data
+                        Timber.d("LoanSim: Loaded ${allPlafonds.size} plafonds (offline-first)")
+                        allPlafonds.forEach { 
+                            Timber.d("LoanSim: Product ${it.name} Range: ${it.minAmount}-${it.maxAmount} MaxTenor: ${it.maxTenor}") 
+                        }
+                        
+                        // Trigger initial detection/simulation after loading products
+                        if (allPlafonds.isNotEmpty()) {
+                            val amountLong = _state.value.amount.replace("[^0-9]".toRegex(), "").toLongOrNull() ?: 5000000L
+                            detectLocalPlafond(amountLong)
+                            calculateLocalSimulation()
+                            triggerSimulation()
+                        }
+                    }
+                    is Resource.Error -> {
+                        Timber.e("LoanSim: Failed to load plafonds: ${result.message}")
+                        // Try to use cached plafonds directly
+                        val cached = plafondRepository.getCachedPlafonds()
+                        if (cached.isNotEmpty()) {
+                            allPlafonds = cached
+                            Timber.d("LoanSim: Using ${cached.size} cached plafonds as fallback")
+                            val amountLong = _state.value.amount.replace("[^0-9]".toRegex(), "").toLongOrNull() ?: 5000000L
+                            detectLocalPlafond(amountLong)
+                            calculateLocalSimulation()
+                        }
+                        // Still trigger simulation in case API works
+                        triggerSimulation()
+                    }
+                    else -> {
+                        // Loading - do nothing
+                    }
                 }
-            } else {
-                 Timber.e("LoanSim: Failed to load plafonds")
-                 // Fallback: trigger simulation to rely on API
-                 triggerSimulation()
             }
         }
     }
@@ -411,22 +438,27 @@ class LoanSimulationViewModel @Inject constructor(
             
             _state.update { it.copy(isSubmitting = true) }
             
-            val request = LoanApplicationRequest(
+            // Use LoanRepository for offline-first support
+            val application = LoanApplication(
                 amount = amountDouble,
-                tenorMonth = tenorInt,
+                tenor = tenorInt,
+                purpose = currentState.purpose.takeIf { it.isNotBlank() },
                 latitude = latitude,
                 longitude = longitude
             )
             
-            val result = safeApiCall { apiService.applyLoan(request) }
+            val result = loanRepository.applyLoan(application)
             
             when (result) {
                 is Resource.Success -> {
+                    Timber.d("Loan application submitted via repository: ${result.data}")
                     _state.update { 
                         it.copy(
                             isSubmitting = false, 
                             isSuccess = true,
-                            loanResult = result.data
+                            // Note: loanResult is LoanDto but repository returns Loan domain model
+                            // For now, we just mark success
+                            loanResult = null
                         ) 
                     }
                 }

@@ -8,8 +8,10 @@ import com.example.eloanmust.core.common.toRupiah
 import com.example.eloanmust.core.datastore.TokenManager
 import com.example.eloanmust.core.network.ApiService
 import com.example.eloanmust.core.network.safeApiCall
-import com.example.eloanmust.feature.loan.data.dto.LoanApplicationRequest
+import com.example.eloanmust.feature.loan.domain.model.LoanApplication
+import com.example.eloanmust.feature.loan.domain.repository.LoanRepository
 import com.example.eloanmust.feature.product.data.dto.PlafondDto
+import com.example.eloanmust.feature.product.domain.repository.PlafondRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -40,7 +42,9 @@ data class LoanApplyState(
 @HiltViewModel
 class LoanApplyViewModel @Inject constructor(
     private val apiService: ApiService,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val plafondRepository: PlafondRepository,
+    private val loanRepository: LoanRepository
 ) : ViewModel() {
     
     private val _state = MutableStateFlow(LoanApplyState())
@@ -54,27 +58,48 @@ class LoanApplyViewModel @Inject constructor(
         checkProfileStatus()
     }
     
+    /**
+     * Load plafonds with offline-first strategy.
+     * Shows cached plafonds immediately, then updates from API if online.
+     */
     private fun loadPlafonds() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             
-            val result = safeApiCall { apiService.getPlafonds() }
-            
-            when (result) {
-                is Resource.Success -> {
-                    _state.update { 
-                        it.copy(
-                            isLoading = false, 
-                            plafonds = result.data,
-                            selectedPlafond = result.data.firstOrNull()
-                        ) 
+            plafondRepository.getPlafonds().collect { result ->
+                when (result) {
+                    is Resource.Success -> {
+                        Timber.d("LoanApply: Loaded ${result.data.size} plafonds (offline-first)")
+                        _state.update { 
+                            it.copy(
+                                isLoading = false, 
+                                plafonds = result.data,
+                                selectedPlafond = it.selectedPlafond ?: result.data.firstOrNull()
+                            ) 
+                        }
                     }
+                    is Resource.Error -> {
+                        Timber.e("LoanApply: Failed to load plafonds: ${result.message}")
+                        // Try cached plafonds as fallback
+                        val cached = plafondRepository.getCachedPlafonds()
+                        if (cached.isNotEmpty()) {
+                            _state.update { 
+                                it.copy(
+                                    isLoading = false, 
+                                    plafonds = cached,
+                                    selectedPlafond = it.selectedPlafond ?: cached.firstOrNull()
+                                ) 
+                            }
+                        } else {
+                            _state.update { it.copy(isLoading = false) }
+                            _uiEvent.send(UiEvent.ShowSnackbar(result.message))
+                        }
+                    }
+                    is Resource.Loading -> {
+                        _state.update { it.copy(isLoading = true) }
+                    }
+                    else -> _state.update { it.copy(isLoading = false) }
                 }
-                is Resource.Error -> {
-                    _state.update { it.copy(isLoading = false) }
-                    _uiEvent.send(UiEvent.ShowSnackbar(result.message))
-                }
-                else -> _state.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -168,18 +193,20 @@ class LoanApplyViewModel @Inject constructor(
             
             _state.update { it.copy(isSubmitting = true) }
             
-            val request = LoanApplicationRequest(
+            // Use LoanRepository for offline-first support
+            val application = LoanApplication(
                 amount = amount!!,
-                tenorMonth = tenor!!,
+                tenor = tenor!!,
+                purpose = currentState.purpose.takeIf { it.isNotBlank() },
                 latitude = latitude,
                 longitude = longitude
             )
             
-            val result = safeApiCall { apiService.applyLoan(request) }
+            val result = loanRepository.applyLoan(application)
             
             when (result) {
                 is Resource.Success -> {
-                    Timber.d("Loan application submitted: ${result.data}")
+                    Timber.d("Loan application submitted via repository: ${result.data}")
                     _state.update { it.copy(isSubmitting = false, isSuccess = true) }
                     // Dialog will handle navigation
                 }

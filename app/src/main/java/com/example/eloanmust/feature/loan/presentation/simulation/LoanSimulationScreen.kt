@@ -2,6 +2,7 @@ package com.example.eloanmust.feature.loan.presentation.simulation
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -60,7 +61,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -400,13 +400,25 @@ fun LoanSimulationScreen(
         },
         containerColor = Color(0xFF0F172A) // Dark blue bg match screenshot
     ) { paddingValues ->
-        Column(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B)
+                        )
+                    )
+                )
         ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
+            ) {
             
             Text(
                 text = "Hitung estimasi cicilan pinjaman Anda secara real-time",
@@ -418,7 +430,7 @@ fun LoanSimulationScreen(
             // Main Card Container
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)), // Slightly lighter blue
+                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)), // Glassmorphism
                 shape = RoundedCornerShape(16.dp),
                 border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
             ) {
@@ -429,9 +441,7 @@ fun LoanSimulationScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(Color(0xFF334155), Color(0xFF1E293B))
-                                ),
+                                color = Color.White.copy(alpha = 0.05f),
                                 shape = RoundedCornerShape(12.dp)
                             )
                             .padding(20.dp)
@@ -558,9 +568,9 @@ fun LoanSimulationScreen(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(8.dp))
                                     .background(
-                                        if (isSelected) Color(0xFF3B82F6) 
-                                        else if (isEnabled) Color(0xFF334155)
-                                        else Color(0xFF1E293B).copy(alpha = 0.5f)
+                                        if (isSelected) Gold70
+                                        else if (isEnabled) Color.White.copy(alpha = 0.1f)
+                                        else Color.White.copy(alpha = 0.05f)
                                     )
                                     .clickable(enabled = isEnabled) { 
                                         viewModel.onEvent(LoanSimulationEvent.TenorChanged(tenor.toString())) 
@@ -570,7 +580,7 @@ fun LoanSimulationScreen(
                             ) {
                                 Text(
                                     text = tenor.toString(),
-                                    color = if (isSelected) Color.White 
+                                    color = if (isSelected) Color.Black 
                                             else if (isEnabled) Color.White.copy(alpha = 0.8f)
                                             else Color.White.copy(alpha = 0.2f),
                                     fontWeight = FontWeight.Medium
@@ -711,6 +721,8 @@ fun LoanSimulationScreen(
         }
     }
 }
+}
+
 
 /**
  * Helper composable for displaying loan detail rows

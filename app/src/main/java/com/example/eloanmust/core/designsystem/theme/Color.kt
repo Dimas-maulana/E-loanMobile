@@ -21,6 +21,19 @@ val Gold90 = Color(0xFFFFF0B3)
 val Gold95 = Color(0xFFFFF8E1)
 val Gold99 = Color(0xFFFFFDF5)
 
+// Primary Blue Colors (Trust & Technology)
+val Blue10 = Color(0xFF001D36)
+val Blue20 = Color(0xFF003258)
+val Blue30 = Color(0xFF00497E)
+val Blue40 = Color(0xFF0061A4)
+val Blue50 = Color(0xFF1976D2)
+val Blue60 = Color(0xFF2196F3) // Primary Blue
+val Blue70 = Color(0xFF64B5F6)
+val Blue80 = Color(0xFF90CAF9)
+val Blue90 = Color(0xFFBBDEFB)
+val Blue95 = Color(0xFFE3F2FD)
+val Blue99 = Color(0xFFF5F9FF)
+
 // Secondary Colors - Dark Navy/Charcoal (Stability & Trust)
 val Dark10 = Color(0xFF0D0D0D)
 val Dark20 = Color(0xFF1A1A1A)
@@ -137,6 +150,17 @@ val StatusDisbursed = Color(0xFF9C27B0)
 object ELoanColors {
     val gradientGold = listOf(GradientGoldStart, GradientGoldEnd)
     val gradientDark = listOf(GradientDarkStart, GradientDarkEnd)
+    
+    // Blue gradients for new theme
+    val gradientBlue = listOf(Blue60, Blue40)
+    val gradientBlueGold = listOf(Blue60, Gold70)
+    val gradientDarkBlue = listOf(Color(0xFF0f172a), Color(0xFF1e293b))
+    
+    // Glassmorphism colors
+    val glassBackground = Color(0x1AFFFFFF) // 10% white
+    val glassBorder = Color(0x2EFFFFFF) // 18% white
+    val glassShadow = Color(0x5E1F2687) // 37% shadow
+    val glassBackgroundDark = Color(0xCC0f172a) // 80% dark
 }
 
 /**

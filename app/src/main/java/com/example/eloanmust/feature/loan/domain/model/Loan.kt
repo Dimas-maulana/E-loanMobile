@@ -65,5 +65,7 @@ data class LoanSimulation(
 data class LoanApplication(
     val amount: Double,
     val tenor: Int,
-    val purpose: String?
+    val purpose: String?,
+    val latitude: Double = 0.0,
+    val longitude: Double = 0.0
 )

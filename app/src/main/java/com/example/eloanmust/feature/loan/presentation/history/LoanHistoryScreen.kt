@@ -1,6 +1,7 @@
 package com.example.eloanmust.feature.loan.presentation.history
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -100,8 +101,8 @@ fun LoanHistoryScreen(
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = Gold70,
-                    titleContentColor = Color.Black
+                    containerColor = Color(0xFF0F172A),
+                    titleContentColor = Color.White
                 )
             )
         },
@@ -117,7 +118,20 @@ fun LoanHistoryScreen(
             }
         }
     ) { paddingValues ->
-        if (!state.isLoggedIn) {
+        // Background
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        colors = listOf(
+                            Color(0xFF0F172A),
+                            Color(0xFF1E293B)
+                        )
+                    )
+                )
+        ) {
+            if (!state.isLoggedIn) {
             // Not logged in - show login required
             LoginRequiredContent(
                 message = "Silakan login untuk melihat riwayat pinjaman Anda",
@@ -162,6 +176,7 @@ fun LoanHistoryScreen(
         }
     }
 }
+}
 
 @Composable
 private fun LoanCard(
@@ -170,9 +185,9 @@ private fun LoanCard(
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -184,13 +199,14 @@ private fun LoanCard(
                     Text(
                         text = "Pinjaman #${loan.id}",
                         style = MaterialTheme.typography.titleSmall,
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color.White
                     )
                     loan.createdAt?.let {
                         Text(
                             text = formatDate(it),
                             style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = Color.White.copy(alpha = 0.5f)
                         )
                     }
                 }
@@ -218,16 +234,16 @@ private fun LoanCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column {
-                    Text("Jumlah", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("Jumlah", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
                     Text(loan.amount.toRupiah(), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold, color = Gold70)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Tenor", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text("${loan.tenor} bulan", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    Text("Tenor", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
+                    Text("${loan.getEffectiveTenor()} bulan", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = Color.White)
                 }
                 Column(horizontalAlignment = Alignment.End) {
-                    Text("Cicilan/bln", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(loan.monthlyInstallment.toRupiah(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                    Text("Cicilan/bln", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.7f))
+                    Text(loan.monthlyInstallment.toRupiah(), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold, color = Gold70)
                 }
             }
         }
@@ -351,3 +367,4 @@ private fun formatDate(dateString: String): String {
         dateString
     }
 }
+

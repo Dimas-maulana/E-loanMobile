@@ -1,7 +1,9 @@
 package com.example.eloanmust.feature.loan.data.datasource
 
 import com.example.eloanmust.core.database.dao.LoanDao
+import com.example.eloanmust.core.database.dao.PendingLoanDao
 import com.example.eloanmust.feature.loan.data.local.LoanEntity
+import com.example.eloanmust.feature.loan.data.local.PendingLoanEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,7 +14,8 @@ import javax.inject.Singleton
  */
 @Singleton
 class LoanLocalDataSource @Inject constructor(
-    private val loanDao: LoanDao
+    private val loanDao: LoanDao,
+    private val pendingLoanDao: PendingLoanDao
 ) {
     /**
      * Get loans by user ID
@@ -82,5 +85,37 @@ class LoanLocalDataSource @Inject constructor(
      */
     suspend fun getLatestLoan(userId: Long): LoanEntity? {
         return loanDao.getLatestLoan(userId)
+    }
+
+    // ============================================
+    // PENDING LOAN OPERATIONS
+    // ============================================
+
+    /**
+     * Insert pending loan
+     */
+    suspend fun insertPendingLoan(pendingLoan: PendingLoanEntity): Long {
+        return pendingLoanDao.insert(pendingLoan)
+    }
+
+    /**
+     * Get all pending loans for user (Sync)
+     */
+    suspend fun getPendingLoansByUserId(userId: Long): List<PendingLoanEntity> {
+        return pendingLoanDao.getAllPendingLoans(userId)
+    }
+
+    /**
+     * Get all pending loans for user (Flow)
+     */
+    fun getPendingLoansByUserIdFlow(userId: Long): Flow<List<PendingLoanEntity>> {
+        return pendingLoanDao.getAllPendingLoansFlow(userId)
+    }
+
+    /**
+     * Delete pending loan
+     */
+    suspend fun deletePendingLoan(id: Long) {
+        pendingLoanDao.deletePendingLoan(id)
     }
 }
