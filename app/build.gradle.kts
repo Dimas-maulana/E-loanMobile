@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.google.services)
+    alias(libs.plugins.spotless)
 }
 
 android {
@@ -21,13 +22,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         // Build Config Fields
-        buildConfigField("String", "BASE_URL", "\"http://10.10.90.192:8081/\"")
+        buildConfigField("String", "BASE_URL", "\"http://10.10.90.189:8081/\"")
     }
 
     buildTypes {
         debug {
             isMinifyEnabled = false
-            buildConfigField("String", "BASE_URL", "\"http://10.10.90.192:8081/\"")
+            buildConfigField("String", "BASE_URL", "\"http://10.10.90.189:8081/\"")
         }
         release {
             isMinifyEnabled = true
@@ -141,4 +142,24 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+}
+
+spotless {
+    kotlin {
+        target("**/*.kt")
+        targetExclude("**/build/**/*.kt")
+        ktlint("1.0.1")
+            .editorConfigOverride(
+                mapOf(
+                    "indent_size" to "4",
+                    "continuation_indent_size" to "4",
+                    "max_line_length" to "120",
+                    "ktlint_standard_no-wildcard-imports" to "disabled"
+                )
+            )
+    }
+    kotlinGradle {
+        target("**/*.gradle.kts")
+        ktlint("1.0.1")
+    }
 }
