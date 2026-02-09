@@ -46,9 +46,9 @@ fun EloanNavGraph(
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
-    
+
     val showBottomBar = currentRoute in bottomNavRoutes
-    
+
     Scaffold(
         bottomBar = {
             if (showBottomBar) {
@@ -88,7 +88,7 @@ fun EloanNavGraph(
             // ============================================
             // MAIN SCREENS (with bottom nav)
             // ============================================
-            
+
             composable(Screen.Home.route) {
                 HomeScreen(
                     onNavigateToLogin = {
@@ -111,7 +111,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(Screen.LoanHistory.route) {
                 LoanHistoryScreen(
                     onNavigateToDetail = { loanId ->
@@ -125,7 +125,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(Screen.Notifications.route) {
                 NotificationScreen(
                     onNavigateToLoanDetail = { loanId ->
@@ -136,7 +136,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(Screen.Profile.route) {
                 ProfileScreen(
                     onNavigateToLogin = {
@@ -146,11 +146,11 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             // ============================================
             // AUTH SCREENS
             // ============================================
-            
+
             composable(Screen.Login.route) {
                 LoginScreen(
                     onNavigateToHome = {
@@ -169,7 +169,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(Screen.Register.route) {
                 RegisterScreen(
                     onNavigateToLogin = {
@@ -182,7 +182,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(Screen.ForgotPassword.route) {
                 ForgotPasswordScreen(
                     onNavigateToLogin = {
@@ -195,11 +195,11 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             // ============================================
             // LOAN SCREENS
             // ============================================
-            
+
             composable(Screen.LoanSimulation.route) {
                 LoanSimulationScreen(
                     onNavigateBack = { navController.popBackStack() },
@@ -213,7 +213,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(Screen.LoanApply.route) {
                 LoanApplyScreen(
                     onNavigateBack = { navController.popBackStack() },
@@ -225,7 +225,7 @@ fun EloanNavGraph(
                     }
                 )
             }
-            
+
             composable(
                 route = Screen.LoanDetail.route,
                 arguments = listOf(navArgument("loanId") { type = NavType.LongType })
@@ -234,11 +234,11 @@ fun EloanNavGraph(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }
-            
+
             // ============================================
             // PROFILE SCREENS
             // ============================================
-            
+
             composable(Screen.EditProfile.route) {
                 ProfileScreen(
                     onNavigateToLogin = {
@@ -256,14 +256,14 @@ fun EloanNavGraph(
 fun EloanBottomNavBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    
+
     NavigationBar(
         containerColor = MaterialTheme.colorScheme.surface,
         contentColor = MaterialTheme.colorScheme.onSurface
     ) {
         bottomNavItems.forEach { item ->
             val selected = currentDestination?.hierarchy?.any { it.route == item.route } == true
-            
+
             NavigationBarItem(
                 selected = selected,
                 onClick = {

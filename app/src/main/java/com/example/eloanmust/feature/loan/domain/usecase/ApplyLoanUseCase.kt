@@ -22,15 +22,15 @@ class ApplyLoanUseCase @Inject constructor(
         if (application.amount <= 0) {
             return Resource.Error("Nominal pinjaman harus lebih dari 0")
         }
-        
+
         if (application.amount < 1_000_000) {
             return Resource.Error("Minimal pinjaman Rp 1.000.000")
         }
-        
+
         if (application.tenor <= 0) {
             return Resource.Error("Tenor harus lebih dari 0 bulan")
         }
-        
+
         return loanRepository.applyLoan(application)
     }
 }

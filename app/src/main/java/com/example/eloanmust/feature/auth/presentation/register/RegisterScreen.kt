@@ -77,7 +77,7 @@ fun RegisterScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -94,7 +94,7 @@ fun RegisterScreen(
             }
         }
     }
-    
+
     // Register Success Dialog
     if (state.isSuccess) {
         androidx.compose.material3.AlertDialog(
@@ -116,7 +116,7 @@ fun RegisterScreen(
             tonalElevation = 6.dp
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -174,23 +174,23 @@ fun RegisterScreen(
                         color = Color.White
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = "Buat Akun Baru",
                     style = MaterialTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Text(
                     text = "Daftar untuk mulai mengajukan pinjaman",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
-                
+
                 // Username Field
                 OutlinedTextField(
                     value = state.username,
@@ -218,9 +218,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Email Field
                 OutlinedTextField(
                     value = state.email,
@@ -248,9 +248,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Fullname Field
                 OutlinedTextField(
                     value = state.fullname,
@@ -278,9 +278,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Phone Field
                 OutlinedTextField(
                     value = state.phone,
@@ -308,9 +308,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Password Field
                 OutlinedTextField(
                     value = state.password,
@@ -347,9 +347,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 // Confirm Password Field
                 OutlinedTextField(
                     value = state.confirmPassword,
@@ -389,9 +389,9 @@ fun RegisterScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Register Button
                 Button(
                     onClick = {
@@ -423,9 +423,9 @@ fun RegisterScreen(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Login Link
                 Row(
                     horizontalArrangement = Arrangement.Center,

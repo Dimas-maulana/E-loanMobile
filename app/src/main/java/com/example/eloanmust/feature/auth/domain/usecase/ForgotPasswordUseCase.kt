@@ -20,11 +20,11 @@ class ForgotPasswordUseCase @Inject constructor(
         if (email.isBlank()) {
             return Resource.Error("Email tidak boleh kosong")
         }
-        
+
         if (!email.isValidEmail()) {
             return Resource.Error("Format email tidak valid")
         }
-        
+
         return authRepository.forgotPassword(email)
     }
 }

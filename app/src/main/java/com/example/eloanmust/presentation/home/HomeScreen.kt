@@ -38,7 +38,7 @@ fun HomeScreen(
 ) {
     var currentRoute by rememberSaveable { mutableStateOf(BottomNavItem.Home.route) }
     val notificationState by notificationViewModel.state.collectAsState()
-    
+
     // Local data class for navigation items
     data class NavItem(
         val route: String,

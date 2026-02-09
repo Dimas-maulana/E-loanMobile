@@ -105,7 +105,6 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController? = n
             )
         }
 
-
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
@@ -130,9 +129,11 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController? = n
                 visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 trailingIcon = {
-                    val image = if (passwordVisible)
+                    val image = if (passwordVisible) {
                         Icons.Filled.Visibility
-                    else Icons.Filled.VisibilityOff
+                    } else {
+                        Icons.Filled.VisibilityOff
+                    }
                     val description = if (passwordVisible) "Hide password" else "Show password"
 
                     IconButton(onClick = { passwordVisible = !passwordVisible }) {
@@ -176,7 +177,6 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController? = n
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
     }
 }
 

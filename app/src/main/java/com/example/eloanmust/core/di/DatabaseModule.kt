@@ -5,8 +5,8 @@ import androidx.room.Room
 import com.example.eloanmust.core.database.AppDatabase
 import com.example.eloanmust.core.database.dao.LoanDao
 import com.example.eloanmust.core.database.dao.NotificationDao
-import com.example.eloanmust.core.database.dao.PlafondDao
 import com.example.eloanmust.core.database.dao.PendingLoanDao
+import com.example.eloanmust.core.database.dao.PlafondDao
 import com.example.eloanmust.core.database.dao.ProfileDao
 import dagger.Module
 import dagger.Provides
@@ -22,7 +22,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-    
+
     /**
      * Provides Room Database instance
      */
@@ -39,7 +39,7 @@ object DatabaseModule {
             .fallbackToDestructiveMigration()
             .build()
     }
-    
+
     /**
      * Provides ProfileDao instance
      */
@@ -48,7 +48,7 @@ object DatabaseModule {
     fun provideProfileDao(database: AppDatabase): ProfileDao {
         return database.profileDao()
     }
-    
+
     /**
      * Provides LoanDao instance
      */
@@ -57,7 +57,7 @@ object DatabaseModule {
     fun provideLoanDao(database: AppDatabase): LoanDao {
         return database.loanDao()
     }
-    
+
     /**
      * Provides NotificationDao instance
      */
@@ -66,7 +66,7 @@ object DatabaseModule {
     fun provideNotificationDao(database: AppDatabase): NotificationDao {
         return database.notificationDao()
     }
-    
+
     /**
      * Provides PlafondDao instance
      */

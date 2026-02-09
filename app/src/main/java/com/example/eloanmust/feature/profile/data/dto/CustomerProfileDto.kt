@@ -8,13 +8,13 @@ import com.google.gson.annotations.SerializedName
 data class CustomerProfileDto(
     @SerializedName("id")
     val id: Long? = null,
-    
+
     @SerializedName("userId")
     val userId: Long? = null,
-    
+
     @SerializedName("fullName")
     val fullName: String? = null,
-    
+
     @SerializedName("identityNumber")
     val nik: String? = null,
 
@@ -32,13 +32,13 @@ data class CustomerProfileDto(
 
     @SerializedName("bankAccountHolderName")
     val bankAccountName: String? = null,
-    
+
     @SerializedName("ktpUrl")
     val ktpImageUrl: String? = null,
-    
+
     @SerializedName("createdAt")
     val createdAt: String? = null,
-    
+
     @SerializedName("updatedAt")
     val updatedAt: String? = null
 )
@@ -49,7 +49,7 @@ data class CustomerProfileDto(
 data class CustomerProfileRequest(
     @SerializedName("fullName")
     val fullName: String,
-    
+
     @SerializedName("identityNumber")
     val nik: String,
 
@@ -67,7 +67,7 @@ data class CustomerProfileRequest(
 
     @SerializedName("bankAccountHolderName")
     val bankAccountName: String? = null
-    
+
 )
 
 /**
@@ -76,7 +76,7 @@ data class CustomerProfileRequest(
 data class ProfileStatusResponse(
     @SerializedName("isComplete", alternate = ["is_complete", "complete"])
     val isComplete: Boolean = false,
-    
+
     @SerializedName("missingFields", alternate = ["missing_fields", "missing_data"])
     val missingFields: List<String>? = null
 )

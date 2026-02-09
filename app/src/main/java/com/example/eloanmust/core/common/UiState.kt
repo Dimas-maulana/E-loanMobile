@@ -16,28 +16,28 @@ data class UiState<out T>(
      * Returns true if there's valid data to display
      */
     val hasData: Boolean get() = data != null
-    
+
     /**
      * Returns true if there's an error to display
      */
     val hasError: Boolean get() = error != null
-    
+
     /**
      * Returns true if the state is in a successful state with data
      */
     val isSuccess: Boolean get() = !isLoading && data != null && error == null
-    
+
     /**
      * Returns true if this is the initial loading state
      */
     val isInitialLoading: Boolean get() = isLoading && data == null
-    
+
     companion object {
         /**
          * Creates an initial/idle state
          */
         fun <T> idle(): UiState<T> = UiState()
-        
+
         /**
          * Creates a loading state
          */
@@ -45,7 +45,7 @@ data class UiState<out T>(
             isLoading = true,
             data = existingData
         )
-        
+
         /**
          * Creates a success state with data
          */
@@ -54,7 +54,7 @@ data class UiState<out T>(
             data = data,
             error = null
         )
-        
+
         /**
          * Creates an error state
          */
@@ -63,7 +63,7 @@ data class UiState<out T>(
             data = existingData,
             error = message
         )
-        
+
         /**
          * Creates a refreshing state (pull-to-refresh)
          */

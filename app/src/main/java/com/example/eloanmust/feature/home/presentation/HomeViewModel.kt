@@ -35,19 +35,19 @@ class HomeViewModel @Inject constructor(
     private val tokenManager: TokenManager,
     private val notificationRepository: com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     init {
         checkLoginStatus()
         loadProducts()
         observeUnreadNotifications()
     }
-    
+
     private fun checkLoginStatus() {
         viewModelScope.launch {
             val isLoggedIn = tokenManager.isLoggedIn.first()
@@ -55,7 +55,7 @@ class HomeViewModel @Inject constructor(
             _state.update { it.copy(isLoggedIn = isLoggedIn, username = username) }
         }
     }
-    
+
     private fun observeUnreadNotifications() {
         viewModelScope.launch {
             try {
@@ -71,7 +71,7 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Load products with offline-first strategy.
      * 1. Show cached products immediately
@@ -81,28 +81,28 @@ class HomeViewModel @Inject constructor(
     private fun loadProducts() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             plafondRepository.getPlafonds().collect { result ->
                 when (result) {
                     is Resource.Success -> {
                         Timber.d("Home: Loaded ${result.data.size} products")
-                        _state.update { 
+                        _state.update {
                             it.copy(
-                                isLoading = false, 
-                                products = result.data, 
+                                isLoading = false,
+                                products = result.data,
                                 error = null,
                                 isOffline = false
-                            ) 
+                            )
                         }
                     }
                     is Resource.Error -> {
                         Timber.e("Home: Failed to load products: ${result.message}")
-                        _state.update { 
+                        _state.update {
                             it.copy(
-                                isLoading = false, 
+                                isLoading = false,
                                 error = result.message,
                                 isOffline = result.message?.contains("koneksi") == true
-                            ) 
+                            )
                         }
                     }
                     is Resource.Loading -> {
@@ -115,12 +115,12 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun refresh() {
         checkLoginStatus()
         loadProducts()
     }
-    
+
     fun onApplyLoan(onLoginRequired: () -> Unit, onProceed: () -> Unit) {
         viewModelScope.launch {
             val isLoggedIn = tokenManager.isLoggedIn.first()

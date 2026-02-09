@@ -70,10 +70,10 @@ fun NotificationEntity.toDomain(): Notification {
  */
 fun RemoteMessage.toNotificationEntity(userId: Long): NotificationEntity {
     val data = this.data
-    
+
     // Generate current timestamp in ISO format for createdAt
     val currentTime = java.time.Instant.now().toString()
-    
+
     return NotificationEntity(
         id = data["notificationId"]?.toLongOrNull() ?: System.currentTimeMillis(),
         userId = userId,

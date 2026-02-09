@@ -17,7 +17,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -46,18 +45,18 @@ class LoanApplyViewModel @Inject constructor(
     private val plafondRepository: PlafondRepository,
     private val loanRepository: LoanRepository
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(LoanApplyState())
     val state: StateFlow<LoanApplyState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     init {
         loadPlafonds()
         checkProfileStatus()
     }
-    
+
     /**
      * Load plafonds with offline-first strategy.
      * Shows cached plafonds immediately, then updates from API if online.
@@ -65,17 +64,17 @@ class LoanApplyViewModel @Inject constructor(
     private fun loadPlafonds() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             plafondRepository.getPlafonds().collect { result ->
                 when (result) {
                     is Resource.Success -> {
                         Timber.d("LoanApply: Loaded ${result.data.size} plafonds (offline-first)")
-                        _state.update { 
+                        _state.update {
                             it.copy(
-                                isLoading = false, 
+                                isLoading = false,
                                 plafonds = result.data,
                                 selectedPlafond = it.selectedPlafond ?: result.data.firstOrNull()
-                            ) 
+                            )
                         }
                     }
                     is Resource.Error -> {
@@ -83,12 +82,12 @@ class LoanApplyViewModel @Inject constructor(
                         // Try cached plafonds as fallback
                         val cached = plafondRepository.getCachedPlafonds()
                         if (cached.isNotEmpty()) {
-                            _state.update { 
+                            _state.update {
                                 it.copy(
-                                    isLoading = false, 
+                                    isLoading = false,
                                     plafonds = cached,
                                     selectedPlafond = it.selectedPlafond ?: cached.firstOrNull()
-                                ) 
+                                )
                             }
                         } else {
                             _state.update { it.copy(isLoading = false) }
@@ -103,7 +102,7 @@ class LoanApplyViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun checkProfileStatus() {
         viewModelScope.launch {
             val result = safeApiCall { apiService.getProfileStatus() }
@@ -112,7 +111,7 @@ class LoanApplyViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun onEvent(event: LoanApplyEvent) {
         when (event) {
             is LoanApplyEvent.AmountChanged -> {
@@ -137,11 +136,11 @@ class LoanApplyViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun detectPlafond(amountStr: String) {
         val amount = amountStr.replace("[^0-9]".toRegex(), "").toDoubleOrNull() ?: return
         val amountLong = amount.toLong()
-        
+
         viewModelScope.launch {
             val result = safeApiCall { apiService.detectPlafond(amountLong) }
             if (result is Resource.Success && result.data != null) {
@@ -149,22 +148,22 @@ class LoanApplyViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun submitApplication(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             val currentState = _state.value
-            
+
             // Validation
             val amount = currentState.amount.replace("[^0-9]".toRegex(), "").toDoubleOrNull()
             val tenor = currentState.tenor.toIntOrNull()
-            
+
             var hasError = false
-            
+
             if (amount == null || amount <= 0) {
                 _state.update { it.copy(amountError = "Masukkan jumlah pinjaman yang valid") }
                 hasError = true
             }
-            
+
             if (tenor == null || tenor <= 0) {
                 _state.update { it.copy(tenorError = "Masukkan tenor yang valid") }
                 hasError = true
@@ -176,23 +175,23 @@ class LoanApplyViewModel @Inject constructor(
                     _state.update { it.copy(amountError = "Nominal harus antara ${plafond.minAmount.toRupiah()} - ${plafond.maxAmount.toRupiah()}") }
                     hasError = true
                 }
-                
+
                 val effectiveMaxTenor = if ((plafond.maxTenor ?: 0) > 0) plafond.maxTenor!! else 60
                 if (tenor != null && tenor > effectiveMaxTenor) {
-                     _state.update { it.copy(tenorError = "Maksimal tenor adalah $effectiveMaxTenor bulan") }
-                     hasError = true
+                    _state.update { it.copy(tenorError = "Maksimal tenor adalah $effectiveMaxTenor bulan") }
+                    hasError = true
                 }
             }
-            
+
             if (hasError) return@launch
-            
+
             if (!currentState.isProfileComplete) {
                 _uiEvent.send(UiEvent.ShowSnackbar("Lengkapi profil Anda terlebih dahulu"))
                 return@launch
             }
-            
+
             _state.update { it.copy(isSubmitting = true) }
-            
+
             // Use LoanRepository for offline-first support
             val application = LoanApplication(
                 amount = amount!!,
@@ -201,9 +200,9 @@ class LoanApplyViewModel @Inject constructor(
                 latitude = latitude,
                 longitude = longitude
             )
-            
+
             val result = loanRepository.applyLoan(application)
-            
+
             when (result) {
                 is Resource.Success -> {
                     Timber.d("Loan application submitted via repository: ${result.data}")

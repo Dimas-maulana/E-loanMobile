@@ -22,7 +22,7 @@ class NetworkMonitor @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    
+
     /**
      * Flow that emits true when network is available, false otherwise
      */
@@ -31,11 +31,11 @@ class NetworkMonitor @Inject constructor(
             override fun onAvailable(network: Network) {
                 trySend(true)
             }
-            
+
             override fun onLost(network: Network) {
                 trySend(false)
             }
-            
+
             override fun onCapabilitiesChanged(
                 network: Network,
                 networkCapabilities: NetworkCapabilities
@@ -46,51 +46,51 @@ class NetworkMonitor @Inject constructor(
                 trySend(hasInternet)
             }
         }
-        
+
         val request = NetworkRequest.Builder()
             .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)
             .build()
-        
+
         // Register callback
         connectivityManager.registerNetworkCallback(request, callback)
-        
+
         // Emit initial state
         trySend(isCurrentlyConnected())
-        
+
         // Unregister callback when flow is cancelled
         awaitClose {
             connectivityManager.unregisterNetworkCallback(callback)
         }
     }.distinctUntilChanged()
-    
+
     /**
      * Check if device is currently connected to internet
      */
     fun isCurrentlyConnected(): Boolean {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        
+
         return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
-    
+
     /**
      * Check if device is connected via WiFi
      */
     fun isConnectedViaWifi(): Boolean {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        
+
         return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)
     }
-    
+
     /**
      * Check if device is connected via Cellular
      */
     fun isConnectedViaCellular(): Boolean {
         val network = connectivityManager.activeNetwork ?: return false
         val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-        
+
         return capabilities.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)
     }
 }

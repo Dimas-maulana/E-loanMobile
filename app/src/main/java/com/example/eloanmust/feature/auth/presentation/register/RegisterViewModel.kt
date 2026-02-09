@@ -46,13 +46,13 @@ data class RegisterState(
 class RegisterViewModel @Inject constructor(
     private val registerUseCase: RegisterUseCase
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(RegisterState())
     val state: StateFlow<RegisterState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     fun onEvent(event: RegisterEvent) {
         when (event) {
             is RegisterEvent.UsernameChanged -> {
@@ -88,60 +88,60 @@ class RegisterViewModel @Inject constructor(
                 }
             }
             is RegisterEvent.DismissSuccessDialog -> {
-                 _state.update { it.copy(isSuccess = false) }
-                 viewModelScope.launch {
-                     _uiEvent.send(UiEvent.Navigate("login"))
-                 }
+                _state.update { it.copy(isSuccess = false) }
+                viewModelScope.launch {
+                    _uiEvent.send(UiEvent.Navigate("login"))
+                }
             }
         }
     }
-    
+
     private fun register() {
         viewModelScope.launch {
             val currentState = _state.value
-            
+
             // Basic validation
             var hasError = false
-            
+
             if (currentState.username.isBlank()) {
                 _state.update { it.copy(usernameError = "Username tidak boleh kosong") }
                 hasError = true
             }
-            
+
             if (currentState.email.isBlank()) {
                 _state.update { it.copy(emailError = "Email tidak boleh kosong") }
                 hasError = true
             }
-            
+
             if (currentState.fullname.isBlank()) {
                 _state.update { it.copy(fullnameError = "Nama lengkap tidak boleh kosong") }
                 hasError = true
             }
-            
+
             if (currentState.phone.isBlank()) {
                 _state.update { it.copy(phoneError = "Nomor telepon tidak boleh kosong") }
                 hasError = true
             }
-            
+
             if (currentState.password.isBlank()) {
                 _state.update { it.copy(passwordError = "Password tidak boleh kosong") }
                 hasError = true
             }
-            
+
             if (currentState.confirmPassword.isBlank()) {
                 _state.update { it.copy(confirmPasswordError = "Konfirmasi password tidak boleh kosong") }
                 hasError = true
             }
-            
+
             if (currentState.password != currentState.confirmPassword) {
                 _state.update { it.copy(confirmPasswordError = "Password tidak cocok") }
                 hasError = true
             }
-            
+
             if (hasError) return@launch
-            
+
             _state.update { it.copy(isLoading = true) }
-            
+
             try {
                 val registrationData = RegistrationData(
                     username = currentState.username.trim(),
@@ -151,7 +151,7 @@ class RegisterViewModel @Inject constructor(
                     fullname = currentState.fullname.trim(),
                     phone = currentState.phone.trim()
                 )
-                
+
                 when (val result = registerUseCase(registrationData)) {
                     is Resource.Success -> {
                         Timber.d("Registration successful")

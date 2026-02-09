@@ -67,7 +67,7 @@ fun ForgotPasswordScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -83,7 +83,7 @@ fun ForgotPasswordScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -120,7 +120,7 @@ fun ForgotPasswordScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(40.dp))
-                
+
                 if (state.isSuccess) {
                     // Success State
                     Icon(
@@ -129,26 +129,26 @@ fun ForgotPasswordScreen(
                         tint = Gold70,
                         modifier = Modifier.size(80.dp)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Text(
                         text = "Email Terkirim!",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Text(
                         text = "Kami telah mengirimkan link reset password ke email Anda. Silakan cek inbox atau folder spam.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
-                    
+
                     Spacer(modifier = Modifier.height(32.dp))
-                    
+
                     Button(
                         onClick = { viewModel.onEvent(ForgotPasswordEvent.NavigateToLogin) },
                         colors = ButtonDefaults.buttonColors(
@@ -168,26 +168,26 @@ fun ForgotPasswordScreen(
                         tint = Gold70,
                         modifier = Modifier.size(80.dp)
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Text(
                         text = "Lupa Password?",
                         style = MaterialTheme.typography.headlineSmall,
                         fontWeight = FontWeight.Bold
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     Text(
                         text = "Masukkan email Anda dan kami akan mengirimkan link untuk reset password.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         textAlign = TextAlign.Center
                     )
-                    
+
                     Spacer(modifier = Modifier.height(32.dp))
-                    
+
                     OutlinedTextField(
                         value = state.email,
                         onValueChange = { viewModel.onEvent(ForgotPasswordEvent.EmailChanged(it)) },
@@ -217,9 +217,9 @@ fun ForgotPasswordScreen(
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     Button(
                         onClick = {
                             focusManager.clearFocus()
@@ -244,9 +244,9 @@ fun ForgotPasswordScreen(
                             Text("Kirim Link Reset", fontWeight = FontWeight.SemiBold)
                         }
                     }
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     TextButton(onClick = onNavigateBack) {
                         Text("Kembali ke Login", color = Gold70)
                     }

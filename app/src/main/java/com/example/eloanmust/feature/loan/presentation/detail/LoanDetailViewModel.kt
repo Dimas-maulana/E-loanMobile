@@ -30,25 +30,25 @@ class LoanDetailViewModel @Inject constructor(
     private val apiService: ApiService,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    
+
     private val loanId: Long = savedStateHandle.get<Long>("loanId") ?: 0L
-    
+
     private val _state = MutableStateFlow(LoanDetailState())
     val state: StateFlow<LoanDetailState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     init {
         loadLoanDetail()
     }
-    
+
     private fun loadLoanDetail() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             val result = safeApiCall { apiService.getLoanById(loanId) }
-            
+
             when (result) {
                 is Resource.Success -> {
                     Timber.d("Loaded loan detail: ${result.data}")
@@ -62,7 +62,7 @@ class LoanDetailViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun refresh() {
         loadLoanDetail()
     }

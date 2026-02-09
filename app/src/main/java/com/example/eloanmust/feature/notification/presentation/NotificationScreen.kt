@@ -1,7 +1,6 @@
 package com.example.eloanmust.feature.notification.presentation
 
 import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -71,7 +71,7 @@ fun NotificationScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -80,12 +80,12 @@ fun NotificationScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text("Notifikasi", color = Color.White)
                         if (state.isLoggedIn && state.unreadCount > 0) {
@@ -147,75 +147,77 @@ fun NotificationScreen(
                 )
         ) {
             if (!state.isLoggedIn) {
-            // Not logged in - show login required
-            LoginRequiredContent(
-                message = "Silakan login untuk melihat notifikasi Anda",
-                onLoginClick = onNavigateToLogin,
-                modifier = Modifier.padding(paddingValues)
-            )
-        } else {
-            PullToRefreshBox(
-                isRefreshing = state.isRefreshing,
-                onRefresh = { viewModel.refresh() },
-                modifier = Modifier.fillMaxSize()
-            ) {
-                if (state.isLoading && state.notifications.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Gold70)
-                    }
-                } else if (state.error != null && state.notifications.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(state.error ?: "Error", color = MaterialTheme.colorScheme.error)
-                            Spacer(modifier = Modifier.height(16.dp))
-                            TextButton(onClick = { viewModel.loadNotifications() }) { 
-                                Text("Coba Lagi", color = Gold70) 
+                // Not logged in - show login required
+                LoginRequiredContent(
+                    message = "Silakan login untuk melihat notifikasi Anda",
+                    onLoginClick = onNavigateToLogin,
+                    modifier = Modifier.padding(paddingValues)
+                )
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { viewModel.refresh() },
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    if (state.isLoading && state.notifications.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Gold70)
+                        }
+                    } else if (state.error != null && state.notifications.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(state.error ?: "Error", color = MaterialTheme.colorScheme.error)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                TextButton(onClick = { viewModel.loadNotifications() }) {
+                                    Text("Coba Lagi", color = Gold70)
+                                }
                             }
                         }
-                    }
-                } else if (state.notifications.isEmpty()) {
-                    EmptyNotifications()
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
-                        
-                        items(state.notifications) { notification ->
-                            NotificationCard(
-                                notification = notification,
-                                onClick = {
-                                    viewModel.markAsRead(notification.id)
-                                    notification.loanApplicationId?.let { onNavigateToLoanDetail(it) }
-                                }
-                            )
+                    } else if (state.notifications.isEmpty()) {
+                        EmptyNotifications()
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                            items(state.notifications) { notification ->
+                                NotificationCard(
+                                    notification = notification,
+                                    onClick = {
+                                        viewModel.markAsRead(notification.id)
+                                        notification.loanApplicationId?.let { onNavigateToLoanDetail(it) }
+                                    }
+                                )
+                            }
+
+                            item { Spacer(modifier = Modifier.height(80.dp)) }
                         }
-                        
-                        item { Spacer(modifier = Modifier.height(80.dp)) }
                     }
                 }
             }
         }
     }
 }
-}
+
 @Composable
 private fun NotificationCard(
     notification: Notification,
     onClick: () -> Unit
 ) {
     val (icon, iconBgColor) = getNotificationStyle(notification.type)
-    
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
         colors = CardDefaults.cardColors(
-            containerColor = if (notification.isRead) 
-                Color.White.copy(alpha = 0.05f) 
-            else 
+            containerColor = if (notification.isRead) {
+                Color.White.copy(alpha = 0.05f)
+            } else {
                 Color.White.copy(alpha = 0.15f)
+            }
         ),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
@@ -233,9 +235,9 @@ private fun NotificationCard(
             ) {
                 Icon(icon, null, tint = iconBgColor, modifier = Modifier.size(24.dp))
             }
-            
+
             Spacer(Modifier.width(12.dp))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -249,7 +251,7 @@ private fun NotificationCard(
                         modifier = Modifier.weight(1f),
                         color = Color.White
                     )
-                    
+
                     if (!notification.isRead) {
                         Box(
                             modifier = Modifier
@@ -259,9 +261,9 @@ private fun NotificationCard(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 Text(
                     text = notification.message,
                     style = MaterialTheme.typography.bodySmall,
@@ -269,9 +271,9 @@ private fun NotificationCard(
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 notification.createdAt?.let {
                     Text(
                         text = formatDate(it),
@@ -374,12 +376,12 @@ private fun formatDate(dateString: String): String {
         // Try parsing with flexible patterns
         val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.US)
         // Handle timezone if present (simplistic approach, ideally use Instant or ZonedDateTime)
-        val cleanDateString = dateString.replace("Z", "").substringBefore(".") 
-        
+        val cleanDateString = dateString.replace("Z", "").substringBefore(".")
+
         val date = inputFormat.parse(cleanDateString)
         val outputFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale("id", "ID"))
         date?.let { outputFormat.format(it) } ?: dateString
-    } catch (e: Exception) { 
-        dateString 
+    } catch (e: Exception) {
+        dateString
     }
 }

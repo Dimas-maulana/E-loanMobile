@@ -62,10 +62,10 @@ object RootDetectionHelper {
      * Returns true if device appears to be rooted.
      */
     fun isDeviceRooted(): Boolean {
-        return checkRootMethod1() || 
-               checkRootMethod2() || 
-               checkRootMethod3() ||
-               checkRootMethod4()
+        return checkRootMethod1() ||
+            checkRootMethod2() ||
+            checkRootMethod3() ||
+            checkRootMethod4()
     }
 
     /**
@@ -76,7 +76,7 @@ object RootDetectionHelper {
         val suBinaryExists = checkRootMethod2()
         val suCommandWorks = checkRootMethod3()
         val rootAppsInstalled = checkRootMethod4()
-        
+
         return RootDetectionResult(
             isRooted = buildTagsRooted || suBinaryExists || suCommandWorks || rootAppsInstalled,
             buildTagsRooted = buildTagsRooted,

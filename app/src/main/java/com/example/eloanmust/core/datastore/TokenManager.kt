@@ -29,7 +29,7 @@ class TokenManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val dataStore = context.dataStore
-    
+
     // Keys
     private object Keys {
         val ACCESS_TOKEN = stringPreferencesKey(Constants.DataStoreKeys.ACCESS_TOKEN)
@@ -44,67 +44,67 @@ class TokenManager @Inject constructor(
         val DARK_MODE = booleanPreferencesKey(Constants.DataStoreKeys.DARK_MODE)
         val FIRST_TIME_LAUNCH = booleanPreferencesKey(Constants.DataStoreKeys.FIRST_TIME_LAUNCH)
     }
-    
+
     // ============================================
     // TOKEN FLOWS
     // ============================================
-    
+
     val accessToken: Flow<String?> = dataStore.data.map { preferences ->
         preferences[Keys.ACCESS_TOKEN]
     }
-    
+
     val refreshToken: Flow<String?> = dataStore.data.map { preferences ->
         preferences[Keys.REFRESH_TOKEN]
     }
-    
+
     val isLoggedIn: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[Keys.IS_LOGGED_IN] == true
     }
-    
+
     val fcmToken: Flow<String?> = dataStore.data.map { preferences ->
         preferences[Keys.FCM_TOKEN]
     }
-    
+
     // ============================================
     // USER DATA FLOWS
     // ============================================
-    
+
     val userId: Flow<Long?> = dataStore.data.map { preferences ->
         preferences[Keys.USER_ID]
     }
-    
+
     val username: Flow<String?> = dataStore.data.map { preferences ->
         preferences[Keys.USERNAME]
     }
-    
+
     val userEmail: Flow<String?> = dataStore.data.map { preferences ->
         preferences[Keys.USER_EMAIL]
     }
-    
+
     val userRole: Flow<String?> = dataStore.data.map { preferences ->
         preferences[Keys.USER_ROLE]
     }
-    
+
     val isProfileComplete: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[Keys.IS_PROFILE_COMPLETE] == true
     }
-    
+
     // ============================================
     // SETTINGS FLOWS
     // ============================================
-    
+
     val darkMode: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[Keys.DARK_MODE] == true
     }
-    
+
     val isFirstTimeLaunch: Flow<Boolean> = dataStore.data.map { preferences ->
         preferences[Keys.FIRST_TIME_LAUNCH] != false
     }
-    
+
     // ============================================
     // SAVE FUNCTIONS
     // ============================================
-    
+
     /**
      * Save login data (tokens and user info)
      */
@@ -126,7 +126,7 @@ class TokenManager @Inject constructor(
             preferences[Keys.IS_LOGGED_IN] = true
         }
     }
-    
+
     /**
      * Save tokens only
      */
@@ -136,7 +136,7 @@ class TokenManager @Inject constructor(
             refreshToken?.let { preferences[Keys.REFRESH_TOKEN] = it }
         }
     }
-    
+
     /**
      * Save FCM token
      */
@@ -145,7 +145,7 @@ class TokenManager @Inject constructor(
             preferences[Keys.FCM_TOKEN] = token
         }
     }
-    
+
     /**
      * Update profile completion status
      */
@@ -154,7 +154,7 @@ class TokenManager @Inject constructor(
             preferences[Keys.IS_PROFILE_COMPLETE] = isComplete
         }
     }
-    
+
     /**
      * Update dark mode preference
      */
@@ -163,7 +163,7 @@ class TokenManager @Inject constructor(
             preferences[Keys.DARK_MODE] = enabled
         }
     }
-    
+
     /**
      * Mark first time launch as completed
      */
@@ -172,11 +172,11 @@ class TokenManager @Inject constructor(
             preferences[Keys.FIRST_TIME_LAUNCH] = false
         }
     }
-    
+
     // ============================================
     // CLEAR FUNCTIONS
     // ============================================
-    
+
     /**
      * Clear all login-related data (logout)
      * Keeps FCM token and app settings
@@ -193,7 +193,7 @@ class TokenManager @Inject constructor(
             preferences[Keys.IS_LOGGED_IN] = false
         }
     }
-    
+
     /**
      * Clear all data (full reset)
      */

@@ -30,7 +30,7 @@ import dagger.hilt.android.AndroidEntryPoint
  */
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    
+
     private val requestPermissionLauncher = registerForActivityResult(
         androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
@@ -43,23 +43,23 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
+
         // Security: Prevent screen capture and recording
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
             WindowManager.LayoutParams.FLAG_SECURE
         )
-        
+
         enableEdgeToEdge()
-        
+
         // Request notification permission on Android 13+
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(android.Manifest.permission.POST_NOTIFICATIONS)
         }
-        
+
         // Check if device is rooted
         val isRooted = RootDetectionHelper.isDeviceRooted()
-        
+
         setContent {
             EloanMustTheme {
                 Surface(
@@ -81,14 +81,14 @@ class MainActivity : ComponentActivity() {
 fun EloanMustApp(showRootWarning: Boolean = false) {
     val navController = rememberNavController()
     var showDialog by remember { mutableStateOf(showRootWarning) }
-    
+
     // Root detection warning dialog
     if (showDialog) {
         RootWarningDialog(
             onDismiss = { showDialog = false }
         )
     }
-    
+
     // Always start from Home - guest can browse products
     EloanNavGraph(
         navController = navController,
@@ -121,4 +121,3 @@ fun RootWarningDialog(onDismiss: () -> Unit) {
         }
     )
 }
-

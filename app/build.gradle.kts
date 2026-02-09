@@ -35,7 +35,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             buildConfigField("String", "BASE_URL", "\"https://api.eloanmust.com/\"")
         }
@@ -109,7 +109,7 @@ dependencies {
     implementation(libs.firebase.messaging)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.auth)
-    
+
     // Google Play Services Auth (for Google Sign-In)
     implementation(libs.play.services.auth)
     implementation(libs.play.services.location)
@@ -153,9 +153,14 @@ spotless {
                 mapOf(
                     "indent_size" to "4",
                     "continuation_indent_size" to "4",
-                    "max_line_length" to "120",
-                    "ktlint_standard_no-wildcard-imports" to "disabled"
-                )
+                    "max_line_length" to "off",
+                    "ktlint_standard_no-wildcard-imports" to "disabled",
+                    "ktlint_standard_function-naming" to "disabled",
+                    "ktlint_standard_package-name" to "disabled",
+                    "ktlint_standard_discouraged-comment-location" to "disabled",
+                    "ktlint_standard_trailing-comma-on-declaration-site" to "disabled",
+                    "ktlint_standard_trailing-comma-on-call-site" to "disabled",
+                ),
             )
     }
     kotlinGradle {

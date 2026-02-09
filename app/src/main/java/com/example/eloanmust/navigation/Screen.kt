@@ -24,13 +24,13 @@ sealed class Screen(val route: String) {
     data object ResetPassword : Screen("reset_password/{token}") {
         fun createRoute(token: String) = "reset_password/$token"
     }
-    
+
     // Main
     data object Home : Screen("home")
     data object Products : Screen("products")
     data object Notifications : Screen("notifications")
     data object Profile : Screen("profile")
-    
+
     // Loan
     data object LoanSimulation : Screen("loan_simulation")
     data object LoanApply : Screen("loan_apply")
@@ -38,11 +38,11 @@ sealed class Screen(val route: String) {
     data object LoanDetail : Screen("loan_detail/{loanId}") {
         fun createRoute(loanId: Long) = "loan_detail/$loanId"
     }
-    
+
     // Profile
     data object EditProfile : Screen("edit_profile")
     data object UploadKtp : Screen("upload_ktp")
-    
+
     // Settings
     data object Settings : Screen("settings")
     data object About : Screen("about")

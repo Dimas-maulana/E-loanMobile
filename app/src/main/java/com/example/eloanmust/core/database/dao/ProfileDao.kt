@@ -12,37 +12,37 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface ProfileDao {
-    
+
     /**
      * Get profile by user ID
      */
     @Query("SELECT * FROM profiles WHERE userId = :userId LIMIT 1")
     fun getProfileByUserId(userId: Long): Flow<ProfileEntity?>
-    
+
     /**
      * Get profile by user ID (suspend)
      */
     @Query("SELECT * FROM profiles WHERE userId = :userId LIMIT 1")
     suspend fun getProfileByUserIdSync(userId: Long): ProfileEntity?
-    
+
     /**
      * Insert or update profile
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertProfile(profile: ProfileEntity)
-    
+
     /**
      * Delete profile by user ID
      */
     @Query("DELETE FROM profiles WHERE userId = :userId")
     suspend fun deleteProfile(userId: Long)
-    
+
     /**
      * Clear all profiles
      */
     @Query("DELETE FROM profiles")
     suspend fun clearAll()
-    
+
     /**
      * Update profile status
      */

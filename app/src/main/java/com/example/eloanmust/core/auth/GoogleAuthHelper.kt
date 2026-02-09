@@ -32,16 +32,16 @@ class GoogleAuthHelper @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
-    
+
     private val googleSignInClient: GoogleSignInClient by lazy {
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getWebClientId())
             .requestEmail()
             .build()
-        
+
         GoogleSignIn.getClient(context, gso)
     }
-    
+
     /**
      * Get Web Client ID from Firebase/Google Console
      * This should match your backend's expected client ID
@@ -50,14 +50,14 @@ class GoogleAuthHelper @Inject constructor(
         // Get from resources - you need to add this to strings.xml
         return context.getString(com.example.eloanmust.R.string.default_web_client_id)
     }
-    
+
     /**
      * Get the Google Sign-In intent to launch the account picker
      */
     fun getSignInIntent(): Intent {
         return googleSignInClient.signInIntent
     }
-    
+
     /**
      * Handle the result from Google Sign-In activity.
      * Signs in to Firebase and returns the Firebase ID Token.
@@ -69,40 +69,39 @@ class GoogleAuthHelper @Inject constructor(
         return try {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             val account = task.getResult(ApiException::class.java)
-            
+
             if (account == null) {
                 Timber.e("Google Sign-In failed: account is null")
                 return GoogleSignInResult.Error("Gagal mendapatkan akun Google")
             }
-            
+
             val googleIdToken = account.idToken
             if (googleIdToken == null) {
                 Timber.e("Google Sign-In failed: idToken is null")
                 return GoogleSignInResult.Error("Gagal mendapatkan token Google")
             }
-            
+
             Timber.d("Google Sign-In successful, signing in to Firebase...")
-            
+
             // Sign in to Firebase with Google credential
             val credential = GoogleAuthProvider.getCredential(googleIdToken, null)
             val authResult = firebaseAuth.signInWithCredential(credential).await()
-            
+
             if (authResult.user == null) {
                 Timber.e("Firebase Sign-In failed: user is null")
                 return GoogleSignInResult.Error("Gagal masuk ke Firebase")
             }
-            
+
             // Get Firebase ID Token to send to backend
             val firebaseIdToken = authResult.user!!.getIdToken(true).await()?.token
-            
+
             if (firebaseIdToken == null) {
                 Timber.e("Failed to get Firebase ID Token")
                 return GoogleSignInResult.Error("Gagal mendapatkan token Firebase")
             }
-            
+
             Timber.d("Firebase ID Token obtained successfully")
             GoogleSignInResult.Success(firebaseIdToken)
-            
         } catch (e: ApiException) {
             Timber.e(e, "Google Sign-In failed with status code: ${e.statusCode}")
             when (e.statusCode) {
@@ -114,7 +113,7 @@ class GoogleAuthHelper @Inject constructor(
             GoogleSignInResult.Error("Terjadi kesalahan: ${e.message}")
         }
     }
-    
+
     /**
      * Sign out from Google and Firebase
      */
@@ -127,7 +126,7 @@ class GoogleAuthHelper @Inject constructor(
             Timber.e(e, "Error during sign out")
         }
     }
-    
+
     /**
      * Revoke access (disconnect Google account)
      */

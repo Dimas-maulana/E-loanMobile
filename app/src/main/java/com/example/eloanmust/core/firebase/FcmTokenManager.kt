@@ -22,12 +22,12 @@ class FcmTokenManager @Inject constructor(
     private val tokenManager: TokenManager
 ) {
     private val _currentToken = MutableStateFlow<String?>(null)
-    
+
     /**
      * Current FCM token as Flow
      */
     val currentToken: Flow<String?> = _currentToken.asStateFlow()
-    
+
     /**
      * Get FCM token, generating new one if needed.
      * This is a suspend function that blocks until token is available.
@@ -39,16 +39,16 @@ class FcmTokenManager @Inject constructor(
             _currentToken.value = cachedToken
             return cachedToken
         }
-        
+
         // Generate new token
         return generateNewToken()
     }
-    
+
     /**
      * Get token or null if not available immediately
      */
     fun getTokenOrNull(): String? = _currentToken.value
-    
+
     /**
      * Generate new FCM token from Firebase
      */
@@ -66,7 +66,7 @@ class FcmTokenManager @Inject constructor(
                 }
         }
     }
-    
+
     /**
      * Save FCM token to persistent storage
      */
@@ -75,7 +75,7 @@ class FcmTokenManager @Inject constructor(
         tokenManager.saveFcmToken(token)
         Timber.d("FCM Token saved to storage")
     }
-    
+
     /**
      * Update token when Firebase generates a new one
      */
@@ -86,14 +86,14 @@ class FcmTokenManager @Inject constructor(
             saveToken(newToken)
         }
     }
-    
+
     /**
      * Clear cached token (for testing)
      */
     fun clearCachedToken() {
         _currentToken.value = null
     }
-    
+
     /**
      * Subscribe to a topic
      */
@@ -106,7 +106,7 @@ class FcmTokenManager @Inject constructor(
                 Timber.e(exception, "Failed to subscribe to topic: $topic")
             }
     }
-    
+
     /**
      * Unsubscribe from a topic
      */

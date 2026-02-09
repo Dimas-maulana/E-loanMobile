@@ -12,13 +12,13 @@ import kotlinx.coroutines.flow.Flow
  */
 @Dao
 interface PendingLoanDao {
-    
+
     /**
      * Insert pending loan
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(pendingLoan: PendingLoanEntity): Long
-    
+
     /**
      * Get all pending loans for user
      */
@@ -36,19 +36,19 @@ interface PendingLoanDao {
      */
     @Query("SELECT * FROM pending_loans WHERE userId = :userId ORDER BY createdAt DESC")
     fun getAllPendingLoansFlow(userId: Long): Flow<List<PendingLoanEntity>>
-    
+
     /**
      * Get pending loan by ID
      */
     @Query("SELECT * FROM pending_loans WHERE id = :id LIMIT 1")
     suspend fun getPendingLoanById(id: Long): PendingLoanEntity?
-    
+
     /**
      * Delete pending loan by ID
      */
     @Query("DELETE FROM pending_loans WHERE id = :id")
     suspend fun deletePendingLoan(id: Long)
-    
+
     /**
      * Clear all pending loans for user
      */

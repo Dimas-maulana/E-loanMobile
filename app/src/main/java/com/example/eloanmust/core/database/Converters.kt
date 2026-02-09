@@ -8,7 +8,7 @@ import java.util.Date
  * Converts complex types to primitives and vice versa.
  */
 class Converters {
-    
+
     /**
      * Convert Long timestamp to Date
      */
@@ -16,7 +16,7 @@ class Converters {
     fun fromTimestamp(value: Long?): Date? {
         return value?.let { Date(it) }
     }
-    
+
     /**
      * Convert Date to Long timestamp
      */
@@ -24,7 +24,7 @@ class Converters {
     fun dateToTimestamp(date: Date?): Long? {
         return date?.time
     }
-    
+
     /**
      * Convert String list to comma-separated string
      */
@@ -32,7 +32,7 @@ class Converters {
     fun fromStringList(list: List<String>?): String? {
         return list?.joinToString(",")
     }
-    
+
     /**
      * Convert comma-separated string to String list
      */

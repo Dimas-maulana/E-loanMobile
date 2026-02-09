@@ -10,7 +10,6 @@ import com.example.eloanmust.core.network.safeApiCall
 import com.example.eloanmust.feature.loan.data.dto.LoanDto
 import com.example.eloanmust.feature.loan.data.dto.LoanSimulationRequest
 import com.example.eloanmust.feature.loan.data.dto.LoanSimulationResponse
-import com.example.eloanmust.feature.loan.domain.model.Loan
 import com.example.eloanmust.feature.loan.domain.model.LoanApplication
 import com.example.eloanmust.feature.loan.domain.repository.LoanRepository
 import com.example.eloanmust.feature.product.data.dto.PlafondDto
@@ -56,24 +55,24 @@ class LoanSimulationViewModel @Inject constructor(
     private val plafondRepository: PlafondRepository,
     private val loanRepository: LoanRepository
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(LoanSimulationState())
     val state: StateFlow<LoanSimulationState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     // Cache for local detection
     private var allPlafonds: List<PlafondDto> = emptyList()
-    
+
     // Job for debouncing simulation
     private var simulationJob: Job? = null
-    
+
     init {
         checkLoginAndProfileStatus()
         fetchAllPlafonds()
     }
-    
+
     /**
      * Fetch plafonds with offline-first strategy.
      * Uses cached plafonds for instant display, then updates from API if online.
@@ -85,10 +84,10 @@ class LoanSimulationViewModel @Inject constructor(
                     is Resource.Success -> {
                         allPlafonds = result.data
                         Timber.d("LoanSim: Loaded ${allPlafonds.size} plafonds (offline-first)")
-                        allPlafonds.forEach { 
-                            Timber.d("LoanSim: Product ${it.name} Range: ${it.minAmount}-${it.maxAmount} MaxTenor: ${it.maxTenor}") 
+                        allPlafonds.forEach {
+                            Timber.d("LoanSim: Product ${it.name} Range: ${it.minAmount}-${it.maxAmount} MaxTenor: ${it.maxTenor}")
                         }
-                        
+
                         // Trigger initial detection/simulation after loading products
                         if (allPlafonds.isNotEmpty()) {
                             val amountLong = _state.value.amount.replace("[^0-9]".toRegex(), "").toLongOrNull() ?: 5000000L
@@ -118,18 +117,18 @@ class LoanSimulationViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun checkLoginAndProfileStatus() {
         viewModelScope.launch {
             val isLoggedIn = tokenManager.isLoggedIn.first()
             _state.update { it.copy(isLoggedIn = isLoggedIn) }
-            
+
             if (isLoggedIn) {
                 checkProfileStatus()
             }
         }
     }
-    
+
     private fun checkProfileStatus() {
         viewModelScope.launch {
             val result = safeApiCall { apiService.getProfileStatus() }
@@ -151,27 +150,27 @@ class LoanSimulationViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun onEvent(event: LoanSimulationEvent) {
         when (event) {
             is LoanSimulationEvent.AmountChanged -> {
                 _state.update { it.copy(amount = event.value, amountError = null) }
-                
+
                 val amountLong = event.value.replace("[^0-9]".toRegex(), "").toLongOrNull() ?: 0L
                 Timber.d("LoanSim: ===== AmountChanged Event =====")
                 Timber.d("LoanSim: Raw amount: ${event.value}, parsed: $amountLong")
-                
+
                 detectLocalPlafond(amountLong)
-                
+
                 val afterDetection = _state.value
                 Timber.d("LoanSim: After detectLocalPlafond -> Plafond: ${afterDetection.selectedPlafond?.name}, MaxTenor: ${afterDetection.selectedPlafond?.maxTenor}, CurrentTenor: ${afterDetection.tenor}")
-                
+
                 calculateLocalSimulation()
-                
+
                 val afterCalc = _state.value
                 Timber.d("LoanSim: After calculateLocalSimulation -> Monthly: ${afterCalc.simulationResult?.monthlyInstallment}")
                 Timber.d("LoanSim: ===== End AmountChanged =====")
-                
+
                 triggerSimulation()
             }
             is LoanSimulationEvent.TenorChanged -> {
@@ -206,26 +205,26 @@ class LoanSimulationViewModel @Inject constructor(
             // Don't return early - let the API call in triggerSimulation handle it
             return
         }
-        
+
         // Find product where amount is within [minAmount, maxAmount]
         val detected = allPlafonds.find { amount >= it.minAmount && amount <= it.maxAmount }
         Timber.d("LoanSim: Local Detection for $amount -> Product: ${detected?.name}, RawMaxTenor: ${detected?.maxTenor}")
-        
+
         if (detected == null) {
             Timber.w("LoanSim: No matching plafond found for amount $amount")
         }
-        
+
         // Update state regardless of whether we found one or not (to clear stale if needed)
         // If detected is null -> we clear it, resetting maxTenor to default (60)
         _state.update { currentState ->
             var newTenor = currentState.tenor
-            
+
             if (detected != null) {
                 val maxTenor = if (detected.maxTenor > 0) detected.maxTenor else 60
                 val currentTenorInt = currentState.tenor.toIntOrNull() ?: 0
-                
+
                 Timber.d("LoanSim: Detected plafond maxTenor logic -> raw: ${detected.maxTenor}, effective: $maxTenor, currentTenor: $currentTenorInt")
-                
+
                 // Auto-adjust tenor if it exceeds maxTenor
                 if (currentTenorInt > maxTenor) {
                     newTenor = maxTenor.toString()
@@ -234,7 +233,7 @@ class LoanSimulationViewModel @Inject constructor(
                     Timber.d("LoanSim: Tenor $currentTenorInt is within limit $maxTenor, no adjustment needed")
                 }
             }
-            
+
             currentState.copy(
                 selectedPlafond = detected,
                 tenor = newTenor
@@ -251,19 +250,19 @@ class LoanSimulationViewModel @Inject constructor(
         val amountStr = currentState.amount.replace("[^0-9]".toRegex(), "")
         val amountDouble = amountStr.toDoubleOrNull() ?: return
         val tenorInt = currentState.tenor.toIntOrNull() ?: return
-        
+
         // Use current plafond rate or a default fallback if none selected yet (avoid 0 if possible)
         val rate = currentState.selectedPlafond?.interestRate ?: 0.0
-        
+
         // Flat interest calculation: Principal + (Principal * Rate * Tenure/12)
         // Rate is usually yearly in percentage, so /100. If rate is monthly, logic changes.
         // Assuming rate is YEARLY PERCENTAGE based on typical loan apps.
         val totalInterest = amountDouble * (rate / 100) * (tenorInt.toDouble() / 12)
         val totalPayment = amountDouble + totalInterest
         val monthlyInstallment = totalPayment / tenorInt
-        
+
         // Update state with a temporary simulation result
-        _state.update { 
+        _state.update {
             it.copy(
                 simulationResult = LoanSimulationResponse(
                     loanAmount = amountDouble,
@@ -278,92 +277,92 @@ class LoanSimulationViewModel @Inject constructor(
             )
         }
     }
-    
+
     private fun triggerSimulation() {
         simulationJob?.cancel()
         simulationJob = viewModelScope.launch {
             delay(500) // Debounce
-            
+
             val amountStr = _state.value.amount.replace("[^0-9]".toRegex(), "")
             val amountDouble = amountStr.toDoubleOrNull() ?: return@launch
             val amountLong = amountDouble.toLong()
-            
+
             // Check if we already have a valid local detection
             val currentPlafond = _state.value.selectedPlafond
-            
+
             if (currentPlafond != null) {
                 Timber.d("LoanSim: Using locally detected plafond ${currentPlafond.name}, skipping API detection")
                 simulate()
             } else {
                 Timber.d("LoanSim: No local plafond found, attempting API detection")
                 val plafondResult = safeApiCall { apiService.detectPlafond(amountLong) }
-                
+
                 if (plafondResult is Resource.Success && plafondResult.data != null) {
                     val detectedPlafond = plafondResult.data
                     Timber.d("LoanSim: API Detection -> ${detectedPlafond.name}")
-                    
+
                     _state.update { currentState ->
                         var newTenor = currentState.tenor
                         val maxTenor = if (detectedPlafond.maxTenor > 0) detectedPlafond.maxTenor else 60
                         val currentTenorInt = currentState.tenor.toIntOrNull() ?: 0
-                        
+
                         if (currentTenorInt > maxTenor) {
                             newTenor = maxTenor.toString()
                         }
-                        
+
                         currentState.copy(
                             selectedPlafond = detectedPlafond,
                             tenor = newTenor
                         )
                     }
-                    
+
                     simulate()
                 } else {
                     Timber.d("LoanSim: API Detection failed or null")
-                    _state.update { 
+                    _state.update {
                         it.copy(
-                            selectedPlafond = null, 
+                            selectedPlafond = null,
                             simulationResult = null,
                             simulationError = "Tidak ada produk pinjaman yang tersedia untuk jumlah ini."
-                        ) 
+                        )
                     }
                 }
             }
         }
     }
-    
+
     private fun simulate() {
         viewModelScope.launch {
             val currentState = _state.value
             val amountDouble = currentState.amount.replace("[^0-9]".toRegex(), "").toDoubleOrNull()
             val tenorInt = currentState.tenor.toIntOrNull()
             val plafondIdLong = currentState.selectedPlafond?.id
-            
+
             if (amountDouble == null || tenorInt == null || plafondIdLong == null) {
                 // Don't error explicitly here, just wait
                 return@launch
             }
-            
+
             // Only show loader if we don't have a local result to show, or maybe small indicator?
             // For now, let's NOT block the UI with a full loader, just small one
             _state.update { it.copy(isSimulating = true, simulationError = null) }
-            
+
             val request = LoanSimulationRequest(
                 amount = amountDouble,
                 tenor = tenorInt,
                 plafondId = plafondIdLong
             )
-            
+
             val result = safeApiCall { apiService.simulateLoan(request) }
-            
+
             when (result) {
                 is Resource.Success -> {
-                    _state.update { 
+                    _state.update {
                         it.copy(
-                            isSimulating = false, 
+                            isSimulating = false,
                             simulationResult = result.data,
                             simulationError = null
-                        ) 
+                        )
                     }
                 }
                 is Resource.Error -> {
@@ -375,7 +374,7 @@ class LoanSimulationViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Shows confirmation dialog before applying for loan.
      * Only validates login status - profile validation is handled by the loan API.
@@ -383,7 +382,7 @@ class LoanSimulationViewModel @Inject constructor(
     private fun showConfirmDialog() {
         viewModelScope.launch {
             val currentState = _state.value
-            
+
             // Check login status
             val isLoggedIn = tokenManager.isLoggedIn.first()
             if (!isLoggedIn) {
@@ -391,34 +390,34 @@ class LoanSimulationViewModel @Inject constructor(
                 _uiEvent.send(UiEvent.Navigate("login"))
                 return@launch
             }
-            
+
             // Skip profile check - let the loan API handle validation
             // If profile is incomplete, the API will return an appropriate error
-            
+
             val amountDouble = currentState.amount.replace("[^0-9]".toRegex(), "").toDoubleOrNull()
             val tenorInt = currentState.tenor.toIntOrNull()
-            
+
             var hasError = false
-            
+
             if (amountDouble == null || amountDouble <= 0) {
                 _state.update { it.copy(amountError = "Masukkan jumlah pinjaman yang valid") }
                 hasError = true
             }
-            
+
             if (tenorInt == null || tenorInt <= 0) {
                 _state.update { it.copy(tenorError = "Masukkan tenor yang valid") }
                 hasError = true
             }
-            
+
             // Validate against max tenor again just in case
             val maxTenor = currentState.selectedPlafond?.maxTenor ?: 0
             if (tenorInt != null && maxTenor > 0 && tenorInt > maxTenor) {
                 _state.update { it.copy(tenorError = "Tenor melebihi batas maksimal ($maxTenor bulan)") }
                 hasError = true
             }
-            
+
             if (hasError) return@launch
-            
+
             // Show confirmation dialog
             _state.update { it.copy(showConfirmDialog = true) }
         }
@@ -427,17 +426,17 @@ class LoanSimulationViewModel @Inject constructor(
     private fun applyLoan(latitude: Double, longitude: Double) {
         viewModelScope.launch {
             val currentState = _state.value
-            
+
             val amountDouble = currentState.amount.replace("[^0-9]".toRegex(), "").toDoubleOrNull()
             val tenorInt = currentState.tenor.toIntOrNull()
-            
+
             if (amountDouble == null || tenorInt == null) {
                 _uiEvent.send(UiEvent.ShowSnackbar("Data tidak valid"))
                 return@launch
             }
-            
+
             _state.update { it.copy(isSubmitting = true) }
-            
+
             // Use LoanRepository for offline-first support
             val application = LoanApplication(
                 amount = amountDouble,
@@ -446,20 +445,20 @@ class LoanSimulationViewModel @Inject constructor(
                 latitude = latitude,
                 longitude = longitude
             )
-            
+
             val result = loanRepository.applyLoan(application)
-            
+
             when (result) {
                 is Resource.Success -> {
                     Timber.d("Loan application submitted via repository: ${result.data}")
-                    _state.update { 
+                    _state.update {
                         it.copy(
-                            isSubmitting = false, 
+                            isSubmitting = false,
                             isSuccess = true,
                             // Note: loanResult is LoanDto but repository returns Loan domain model
                             // For now, we just mark success
                             loanResult = null
-                        ) 
+                        )
                     }
                 }
                 is Resource.Error -> {

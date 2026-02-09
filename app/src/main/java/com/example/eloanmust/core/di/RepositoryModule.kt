@@ -16,7 +16,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
-    
+
     /**
      * Binds AuthRepository implementation
      */
@@ -25,7 +25,7 @@ abstract class RepositoryModule {
     abstract fun bindAuthRepository(
         authRepositoryImpl: AuthRepositoryImpl
     ): AuthRepository
-    
+
     /**
      * Binds LoanRepository implementation
      */
@@ -34,13 +34,13 @@ abstract class RepositoryModule {
     abstract fun bindLoanRepository(
         loanRepositoryImpl: LoanRepositoryImpl
     ): LoanRepository
-    
+
     @Binds
     @Singleton
     abstract fun bindNotificationRepository(
         notificationRepositoryImpl: com.example.eloanmust.feature.notification.data.repository.NotificationRepositoryImpl
     ): com.example.eloanmust.feature.notification.domain.repository.NotificationRepository
-    
+
     /**
      * Binds PlafondRepository implementation
      */

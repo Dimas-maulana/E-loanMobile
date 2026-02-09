@@ -46,17 +46,17 @@ class LoginViewModel @Inject constructor(
     private val googleAuthHelper: GoogleAuthHelper,
     private val fcmTokenManager: FcmTokenManager
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(LoginState())
     val state: StateFlow<LoginState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     // Channel for Google Sign-In intent
     private val _googleSignInIntent = Channel<Intent>()
     val googleSignInIntent = _googleSignInIntent.receiveAsFlow()
-    
+
     /**
      * Handle login form events
      */
@@ -95,27 +95,27 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Execute login
      */
     private fun login() {
         viewModelScope.launch {
             val currentState = _state.value
-            
+
             // Basic validation
             if (currentState.username.isBlank()) {
                 _state.update { it.copy(usernameError = "Username tidak boleh kosong") }
                 return@launch
             }
-            
+
             if (currentState.password.isBlank()) {
                 _state.update { it.copy(passwordError = "Password tidak boleh kosong") }
                 return@launch
             }
-            
+
             _state.update { it.copy(isLoading = true) }
-            
+
             try {
                 // Get FCM token
                 val fcmToken = try {
@@ -124,19 +124,19 @@ class LoginViewModel @Inject constructor(
                     Timber.e(e, "Failed to get FCM token, using empty string")
                     ""
                 }
-                
+
                 // Save FCM token
                 if (fcmToken.isNotBlank()) {
                     fcmTokenManager.saveToken(fcmToken)
                 }
-                
+
                 // Create credentials
                 val credentials = LoginCredentials(
                     username = currentState.username.trim(),
                     password = currentState.password,
                     fcmToken = fcmToken
                 )
-                
+
                 // Execute login
                 when (val result = loginUseCase(credentials)) {
                     is Resource.Success -> {
@@ -162,7 +162,7 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Start Google Sign-In flow
      */
@@ -179,19 +179,19 @@ class LoginViewModel @Inject constructor(
             }
         }
     }
-    
+
     /**
      * Handle Google Sign-In result from Activity
      */
     fun onGoogleSignInResult(data: Intent?) {
         viewModelScope.launch {
             _state.update { it.copy(isGoogleLoading = true) }
-            
+
             try {
                 when (val result = googleAuthHelper.handleSignInResult(data)) {
                     is GoogleSignInResult.Success -> {
                         Timber.d("Got Firebase ID Token, sending to backend...")
-                        
+
                         // Get FCM token
                         val fcmToken = try {
                             fcmTokenManager.getToken()
@@ -199,7 +199,7 @@ class LoginViewModel @Inject constructor(
                             Timber.e(e, "Failed to get FCM token")
                             null
                         }
-                        
+
                         // Send to backend
                         when (val loginResult = googleSignInUseCase(result.idToken, fcmToken)) {
                             is Resource.Success -> {

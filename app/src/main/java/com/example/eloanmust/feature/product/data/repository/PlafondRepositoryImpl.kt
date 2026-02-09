@@ -35,7 +35,7 @@ class PlafondRepositoryImpl @Inject constructor(
 
     override fun getPlafonds(): Flow<Resource<List<PlafondDto>>> = flow {
         Timber.d("PlafondRepo: Getting plafonds with offline-first strategy")
-        
+
         // Step 1: Emit cached data first (if available)
         val cachedPlafonds = localDataSource.getActivePlafondsSync().toDtoList()
         if (cachedPlafonds.isNotEmpty()) {
@@ -45,22 +45,22 @@ class PlafondRepositoryImpl @Inject constructor(
             // No cache, show loading
             emit(Resource.Loading)
         }
-        
+
         // Step 2: Check network and fetch fresh data if online
         if (networkMonitor.isCurrentlyConnected()) {
             Timber.d("PlafondRepo: Online, fetching fresh plafonds from API")
-            
+
             val remoteResult = safeApiCall { apiService.getPlafonds() }
-            
+
             when (remoteResult) {
                 is Resource.Success -> {
                     val remotePlafonds = remoteResult.data
                     Timber.d("PlafondRepo: Fetched ${remotePlafonds.size} plafonds from API")
-                    
+
                     // Step 3: Update local cache
                     localDataSource.clearAll()
                     localDataSource.insertPlafonds(remotePlafonds.toEntityList())
-                    
+
                     // Step 4: Emit fresh data
                     emit(Resource.Success(remotePlafonds))
                 }
@@ -90,9 +90,9 @@ class PlafondRepositoryImpl @Inject constructor(
 
     override suspend fun refreshPlafonds(): Resource<Unit> {
         Timber.d("PlafondRepo: Force refreshing plafonds")
-        
+
         val result = safeApiCall { apiService.getPlafonds() }
-        
+
         return when (result) {
             is Resource.Success -> {
                 localDataSource.clearAll()
@@ -124,20 +124,20 @@ class PlafondRepositoryImpl @Inject constructor(
             Timber.d("PlafondRepo: Detected plafond from cache: ${cachedPlafond.name}")
             return Resource.Success(cachedPlafond)
         }
-        
+
         // Fallback to API if online
         if (networkMonitor.isCurrentlyConnected()) {
             Timber.d("PlafondRepo: No cached plafond, fetching from API for amount $amount")
             val result = safeApiCall { apiService.detectPlafond(amount) }
-            
+
             if (result is Resource.Success && result.data != null) {
                 // Cache this plafond
                 localDataSource.insertPlafond(result.data.toEntity())
             }
-            
+
             return result
         }
-        
+
         return Resource.Error("Tidak ada produk pinjaman yang cocok untuk jumlah ini")
     }
 }

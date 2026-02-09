@@ -23,39 +23,39 @@ class RegisterUseCase @Inject constructor(
         if (data.username.isBlank()) {
             return Resource.Error("Username tidak boleh kosong")
         }
-        
+
         if (data.username.length < 3) {
             return Resource.Error("Username minimal 3 karakter")
         }
-        
+
         if (data.email.isBlank()) {
             return Resource.Error("Email tidak boleh kosong")
         }
-        
+
         if (!data.email.isValidEmail()) {
             return Resource.Error("Format email tidak valid")
         }
-        
+
         if (data.fullname.isBlank()) {
             return Resource.Error("Nama lengkap tidak boleh kosong")
         }
-        
+
         if (data.phone.isBlank()) {
             return Resource.Error("Nomor telepon tidak boleh kosong")
         }
-        
+
         if (data.password.isBlank()) {
             return Resource.Error("Password tidak boleh kosong")
         }
-        
+
         if (data.password.length < 8) {
             return Resource.Error("Password minimal 8 karakter")
         }
-        
+
         if (data.password != data.confirmPassword) {
             return Resource.Error("Konfirmasi password tidak cocok")
         }
-        
+
         return authRepository.register(data)
     }
 }

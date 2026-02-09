@@ -23,15 +23,15 @@ class LoginUseCase @Inject constructor(
         if (credentials.username.isBlank()) {
             return Resource.Error("Username tidak boleh kosong")
         }
-        
+
         if (credentials.password.isBlank()) {
             return Resource.Error("Password tidak boleh kosong")
         }
-        
+
         if (credentials.password.length < 6) {
             return Resource.Error("Password minimal 6 karakter")
         }
-        
+
         return authRepository.login(credentials)
     }
 }

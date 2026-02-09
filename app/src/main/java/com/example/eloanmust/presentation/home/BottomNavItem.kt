@@ -16,7 +16,7 @@ sealed class BottomNavItem(
         title = "Beranda",
         icon = Icons.Default.Home
     )
-    
+
     object Notification : BottomNavItem(
         route = "notification_tab",
         title = "Notifikasi",

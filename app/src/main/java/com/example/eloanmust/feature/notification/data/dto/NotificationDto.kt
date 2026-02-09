@@ -8,25 +8,25 @@ import com.google.gson.annotations.SerializedName
 data class NotificationDto(
     @SerializedName("id")
     val id: Long,
-    
+
     @SerializedName("userId")
     val userId: Long? = null,
-    
+
     @SerializedName("loanApplicationId")
     val loanApplicationId: Long? = null,
-    
+
     @SerializedName("type")
     val type: String,
-    
+
     @SerializedName("channel")
     val channel: String? = null,
-    
+
     @SerializedName("message")
     val message: String,
-    
+
     @SerializedName("isRead")
     val isRead: Boolean = false,
-    
+
     @SerializedName("createdAt")
     val createdAt: String? = null
 ) {
@@ -49,7 +49,7 @@ data class NotificationDto(
             else -> "Notifikasi"
         }
     }
-    
+
     /**
      * Get loan ID for navigation (alias for loanApplicationId)
      */

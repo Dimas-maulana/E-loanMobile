@@ -8,12 +8,12 @@ package com.example.eloanmust.core.common
  * @param T The type of data being wrapped
  */
 sealed class Resource<out T> {
-    
+
     /**
      * Represents a successful operation with data
      */
     data class Success<T>(val data: T) : Resource<T>()
-    
+
     /**
      * Represents a failed operation with error message
      */
@@ -22,32 +22,32 @@ sealed class Resource<out T> {
         val code: Int? = null,
         val exception: Throwable? = null
     ) : Resource<Nothing>()
-    
+
     /**
      * Represents an ongoing operation
      */
     data object Loading : Resource<Nothing>()
-    
+
     /**
      * Represents an empty/idle state
      */
     data object Idle : Resource<Nothing>()
-    
+
     /**
      * Returns true if this Resource is in Loading state
      */
     val isLoading: Boolean get() = this is Loading
-    
+
     /**
      * Returns true if this Resource is in Success state
      */
     val isSuccess: Boolean get() = this is Success
-    
+
     /**
      * Returns true if this Resource is in Error state
      */
     val isError: Boolean get() = this is Error
-    
+
     /**
      * Returns the data if Success, null otherwise
      */
@@ -55,7 +55,7 @@ sealed class Resource<out T> {
         is Success -> data
         else -> null
     }
-    
+
     /**
      * Returns the error message if Error, null otherwise
      */
@@ -63,7 +63,7 @@ sealed class Resource<out T> {
         is Error -> message
         else -> null
     }
-    
+
     /**
      * Maps the success data to another type
      */
@@ -73,7 +73,7 @@ sealed class Resource<out T> {
         is Loading -> Loading
         is Idle -> Idle
     }
-    
+
     /**
      * Executes the given block if this is Success
      */
@@ -81,7 +81,7 @@ sealed class Resource<out T> {
         if (this is Success) action(data)
         return this
     }
-    
+
     /**
      * Executes the given block if this is Error
      */
@@ -89,7 +89,7 @@ sealed class Resource<out T> {
         if (this is Error) action(message, code, exception)
         return this
     }
-    
+
     /**
      * Executes the given block if this is Loading
      */
@@ -97,13 +97,13 @@ sealed class Resource<out T> {
         if (this is Loading) action()
         return this
     }
-    
+
     companion object {
         /**
          * Creates a Success Resource
          */
         fun <T> success(data: T): Resource<T> = Success(data)
-        
+
         /**
          * Creates an Error Resource
          */
@@ -112,12 +112,12 @@ sealed class Resource<out T> {
             code: Int? = null,
             exception: Throwable? = null
         ): Resource<Nothing> = Error(message, code, exception)
-        
+
         /**
          * Creates a Loading Resource
          */
         fun loading(): Resource<Nothing> = Loading
-        
+
         /**
          * Creates an Idle Resource
          */

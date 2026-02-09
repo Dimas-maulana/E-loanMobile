@@ -74,7 +74,7 @@ fun LoanApplyScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -88,20 +88,20 @@ fun LoanApplyScreen(
             }
         }
     }
-    
+
     // Application Success Dialog
     if (state.isSuccess) {
         androidx.compose.material3.AlertDialog(
             onDismissRequest = { viewModel.onEvent(LoanApplyEvent.DismissSuccessDialog) },
             icon = {
-                 Icon(Icons.Default.CheckCircle, null, tint = Gold70, modifier = Modifier.size(48.dp))
+                Icon(Icons.Default.CheckCircle, null, tint = Gold70, modifier = Modifier.size(48.dp))
             },
             title = {
                 Text(text = "Pengajuan Berhasil", textAlign = TextAlign.Center)
             },
             text = {
                 Text(
-                    "Pengajuan Anda telah diterima dan sedang menunggu verifikasi.", 
+                    "Pengajuan Anda telah diterima dan sedang menunggu verifikasi.",
                     textAlign = TextAlign.Center
                 )
             },
@@ -117,7 +117,7 @@ fun LoanApplyScreen(
             tonalElevation = 6.dp
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -177,7 +177,7 @@ fun LoanApplyScreen(
                     }
                     Spacer(modifier = Modifier.height(16.dp))
                 }
-                
+
                 // Amount Input with Slider
                 Card(
                     modifier = Modifier.fillMaxWidth(),
@@ -190,9 +190,9 @@ fun LoanApplyScreen(
                             style = MaterialTheme.typography.titleSmall,
                             fontWeight = FontWeight.SemiBold
                         )
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         // Display current amount
                         Text(
                             text = if (state.amount.isNotEmpty()) {
@@ -204,13 +204,13 @@ fun LoanApplyScreen(
                             fontWeight = FontWeight.Bold,
                             color = Gold70
                         )
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         // Amount Slider
                         Slider(
                             value = state.amount.replace("[^0-9]".toRegex(), "").toFloatOrNull() ?: 1000000f,
-                            onValueChange = { 
+                            onValueChange = {
                                 viewModel.onEvent(LoanApplyEvent.AmountChanged(it.toLong().toString()))
                             },
                             valueRange = 1000000f..100000000f,
@@ -221,7 +221,7 @@ fun LoanApplyScreen(
                                 inactiveTrackColor = Gold70.copy(alpha = 0.3f)
                             )
                         )
-                        
+
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
@@ -237,7 +237,7 @@ fun LoanApplyScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
-                        
+
                         if (state.amountError != null) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
@@ -248,9 +248,9 @@ fun LoanApplyScreen(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Auto-detected Product
                 AnimatedVisibility(visible = state.selectedPlafond != null) {
                     state.selectedPlafond?.let { plafond ->
@@ -286,9 +286,9 @@ fun LoanApplyScreen(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Tenor Input
                 OutlinedTextField(
                     value = state.tenor,
@@ -306,30 +306,30 @@ fun LoanApplyScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Submit Button
                 val context = androidx.compose.ui.platform.LocalContext.current
-                val fusedLocationClient = remember { 
-                    com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context) 
+                val fusedLocationClient = remember {
+                    com.google.android.gms.location.LocationServices.getFusedLocationProviderClient(context)
                 }
-                
+
                 val permissionLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
                     androidx.activity.result.contract.ActivityResultContracts.RequestMultiplePermissions()
                 ) { permissions ->
                     val isGranted = permissions.getOrDefault(android.Manifest.permission.ACCESS_FINE_LOCATION, false) ||
-                                    permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false)
-                    
+                        permissions.getOrDefault(android.Manifest.permission.ACCESS_COARSE_LOCATION, false)
+
                     if (isGranted) {
-                         try {
+                        try {
                             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                                 if (location != null) {
                                     viewModel.onEvent(LoanApplyEvent.Submit(location.latitude, location.longitude))
                                 } else {
-                                     // Try to get current location if lastLocation is null
-                                     // For simplicity in this iteration, we show a message, or we could request updates.
-                                     // A more robust app would request location updates here.
+                                    // Try to get current location if lastLocation is null
+                                    // For simplicity in this iteration, we show a message, or we could request updates.
+                                    // A more robust app would request location updates here.
                                     android.widget.Toast.makeText(context, "Gagal mendapatkan lokasi. Pastikan GPS aktif.", android.widget.Toast.LENGTH_LONG).show()
                                 }
                             }
@@ -342,7 +342,7 @@ fun LoanApplyScreen(
                 }
 
                 Button(
-                    onClick = { 
+                    onClick = {
                         if (androidx.core.app.ActivityCompat.checkSelfPermission(
                                 context,
                                 android.Manifest.permission.ACCESS_FINE_LOCATION
@@ -385,7 +385,7 @@ fun LoanApplyScreen(
                         Text("Ajukan Pinjaman", fontWeight = FontWeight.SemiBold)
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
             }
         }
@@ -399,7 +399,7 @@ private fun PlafondItem(
     onClick: () -> Unit
 ) {
     val borderColor = if (isSelected) Gold70 else MaterialTheme.colorScheme.outline
-    
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -460,7 +460,7 @@ private fun SuccessScreen(
                 textAlign = TextAlign.Center
             )
             Spacer(modifier = Modifier.height(32.dp))
-            
+
             Button(
                 onClick = onViewHistory,
                 colors = ButtonDefaults.buttonColors(containerColor = Gold70, contentColor = Color.Black),
@@ -469,9 +469,9 @@ private fun SuccessScreen(
             ) {
                 Text("Lihat Riwayat Pinjaman", fontWeight = FontWeight.SemiBold)
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             Button(
                 onClick = onBackToHome,
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent, contentColor = Gold70),

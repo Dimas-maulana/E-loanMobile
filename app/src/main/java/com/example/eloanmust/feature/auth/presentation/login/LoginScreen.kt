@@ -8,7 +8,6 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -64,12 +63,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.eloanmust.R
 import com.example.eloanmust.core.common.UiEvent
-import com.example.eloanmust.core.designsystem.theme.ELoanColors
 import com.example.eloanmust.core.designsystem.theme.Gold70
 import kotlinx.coroutines.flow.collectLatest
 
@@ -87,7 +84,7 @@ fun LoginScreen(
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val focusManager = LocalFocusManager.current
-    
+
     // Google Sign-In launcher
     val googleSignInLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
@@ -99,7 +96,7 @@ fun LoginScreen(
             viewModel.onGoogleSignInResult(result.data)
         }
     }
-    
+
     // Handle UI events
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
@@ -119,14 +116,14 @@ fun LoginScreen(
             }
         }
     }
-    
+
     // Handle Google Sign-In intent
     LaunchedEffect(key1 = true) {
         viewModel.googleSignInIntent.collectLatest { intent ->
             googleSignInLauncher.launch(intent)
         }
     }
-    
+
     // Authorization Success Dialog
     if (state.isSuccess) {
         androidx.compose.material3.AlertDialog(
@@ -148,7 +145,7 @@ fun LoginScreen(
             tonalElevation = 6.dp
         )
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { paddingValues ->
@@ -174,7 +171,7 @@ fun LoginScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(48.dp))
-                
+
                 // Logo
                 Image(
                     painter = painterResource(id = R.drawable.logo_wolf),
@@ -183,9 +180,9 @@ fun LoginScreen(
                         .size(120.dp)
                         .clip(RoundedCornerShape(24.dp))
                 )
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Title
                 Text(
                     text = "Selamat Datang",
@@ -193,15 +190,15 @@ fun LoginScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
-                
+
                 Text(
                     text = "Masuk ke akun Anda",
                     style = MaterialTheme.typography.bodyLarge,
                     color = Color.White.copy(alpha = 0.7f)
                 )
-                
+
                 Spacer(modifier = Modifier.height(48.dp))
-                
+
                 // Username Field
                 OutlinedTextField(
                     value = state.username,
@@ -241,9 +238,9 @@ fun LoginScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 // Password Field
                 OutlinedTextField(
                     value = state.password,
@@ -299,7 +296,7 @@ fun LoginScreen(
                     shape = RoundedCornerShape(12.dp),
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 // Forgot Password
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -315,9 +312,9 @@ fun LoginScreen(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Login Button
                 Button(
                     onClick = {
@@ -357,9 +354,9 @@ fun LoginScreen(
                         )
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Divider with "atau"
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -380,9 +377,9 @@ fun LoginScreen(
                         color = MaterialTheme.colorScheme.outlineVariant
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
-                
+
                 // Google Sign-In Button
                 OutlinedButton(
                     onClick = { viewModel.onEvent(LoginEvent.GoogleSignIn) },
@@ -429,9 +426,9 @@ fun LoginScreen(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(32.dp))
-                
+
                 // Register Link
                 Row(
                     horizontalArrangement = Arrangement.Center,
@@ -452,7 +449,7 @@ fun LoginScreen(
                         }
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
         }

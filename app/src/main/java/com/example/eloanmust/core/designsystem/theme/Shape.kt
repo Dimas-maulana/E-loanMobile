@@ -13,16 +13,16 @@ import androidx.compose.ui.unit.dp
 val ELoanShapes = Shapes(
     // Extra Small - Chips, small badges
     extraSmall = RoundedCornerShape(4.dp),
-    
+
     // Small - Buttons, text fields
     small = RoundedCornerShape(8.dp),
-    
+
     // Medium - Cards, dialogs
     medium = RoundedCornerShape(12.dp),
-    
+
     // Large - Bottom sheets, large cards
     large = RoundedCornerShape(16.dp),
-    
+
     // Extra Large - Modal sheets
     extraLarge = RoundedCornerShape(24.dp),
 )

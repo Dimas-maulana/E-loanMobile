@@ -31,18 +31,18 @@ class AuthRepositoryImpl @Inject constructor(
     private val localDataSource: AuthLocalDataSource,
     private val notificationDao: NotificationDao
 ) : AuthRepository {
-    
+
     override suspend fun login(credentials: LoginCredentials): Resource<UserSession> {
         Timber.d("Attempting login for user: ${credentials.username}")
-        
+
         val result = safeApiCall {
             remoteDataSource.login(credentials.toRequest())
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 val userSession = result.data.toUserSession()
-                
+
                 // Save session to local storage
                 localDataSource.saveLoginSession(
                     accessToken = userSession.accessToken,
@@ -52,7 +52,7 @@ class AuthRepositoryImpl @Inject constructor(
                     email = userSession.user.email,
                     role = userSession.user.role
                 )
-                
+
                 Timber.d("Login successful for user: ${userSession.user.username}")
                 Resource.Success(userSession)
             }
@@ -64,18 +64,18 @@ class AuthRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override suspend fun loginWithGoogle(idToken: String, fcmToken: String?): Resource<UserSession> {
         Timber.d("Attempting Google login")
-        
+
         val result = safeApiCall {
             remoteDataSource.loginWithGoogle(GoogleAuthRequest(idToken, fcmToken))
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 val userSession = result.data.toUserSession()
-                
+
                 // Save session to local storage
                 localDataSource.saveLoginSession(
                     accessToken = userSession.accessToken,
@@ -85,7 +85,7 @@ class AuthRepositoryImpl @Inject constructor(
                     email = userSession.user.email,
                     role = userSession.user.role
                 )
-                
+
                 Timber.d("Google login successful for user: ${userSession.user.username}")
                 Resource.Success(userSession)
             }
@@ -97,14 +97,14 @@ class AuthRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override suspend fun register(data: RegistrationData): Resource<User> {
         Timber.d("Attempting registration for user: ${data.username}")
-        
+
         val result = safeApiCall {
             remoteDataSource.register(data.toRequest())
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 Timber.d("Registration successful for user: ${data.username}")
@@ -118,22 +118,22 @@ class AuthRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override suspend fun logout(): Resource<Unit> {
         Timber.d("Attempting logout")
-        
+
         // First, try to logout from server
         val result = safeApiCall {
             remoteDataSource.logout()
         }
-        
+
         // Always clear local session, even if server logout fails
         localDataSource.clearLoginSession()
-        
+
         // Clear all notifications to ensure clean state for next user
         notificationDao.clearAll()
         Timber.d("Cleared all local notifications on logout")
-        
+
         return when (result) {
             is Resource.Success -> {
                 Timber.d("Logout successful")
@@ -151,14 +151,14 @@ class AuthRepositoryImpl @Inject constructor(
             }
         }
     }
-    
+
     override suspend fun forgotPassword(email: String): Resource<Unit> {
         Timber.d("Requesting password reset for: $email")
-        
+
         val result = safeApiCall {
             remoteDataSource.forgotPassword(ForgotPasswordRequest(email))
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 Timber.d("Password reset request sent")
@@ -172,10 +172,10 @@ class AuthRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override suspend fun resetPassword(token: String, newPassword: String): Resource<Unit> {
         Timber.d("Attempting password reset")
-        
+
         val result = safeApiCall {
             remoteDataSource.resetPassword(
                 ResetPasswordRequest(
@@ -185,7 +185,7 @@ class AuthRepositoryImpl @Inject constructor(
                 )
             )
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 Timber.d("Password reset successful")
@@ -199,15 +199,15 @@ class AuthRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override fun isLoggedIn(): Flow<Boolean> {
         return localDataSource.isLoggedIn()
     }
-    
+
     override fun getCurrentUserId(): Flow<Long?> {
         return localDataSource.getCurrentUserId()
     }
-    
+
     override fun getAccessToken(): Flow<String?> {
         return localDataSource.getAccessToken()
     }

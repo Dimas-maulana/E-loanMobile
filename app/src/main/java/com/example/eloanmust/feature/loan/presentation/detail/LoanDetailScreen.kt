@@ -1,7 +1,6 @@
 package com.example.eloanmust.feature.loan.presentation.detail
 
 import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,6 +48,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
@@ -73,7 +73,7 @@ fun LoanDetailScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -82,7 +82,7 @@ fun LoanDetailScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -115,27 +115,27 @@ fun LoanDetailScreen(
                 )
         ) {
             if (state.isLoading) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = Gold70)
-            }
-        } else if (state.error != null) {
-            Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(state.error ?: "Error", color = MaterialTheme.colorScheme.error)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    TextButton(onClick = { viewModel.refresh() }) { Text("Coba Lagi", color = Gold70) }
+                Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = Gold70)
                 }
-            }
-        } else {
-            state.loan?.let { loan ->
-                LoanDetailContent(
-                    loan = loan,
-                    modifier = Modifier.padding(paddingValues)
-                )
+            } else if (state.error != null) {
+                Box(modifier = Modifier.fillMaxSize().padding(paddingValues), contentAlignment = Alignment.Center) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(state.error ?: "Error", color = MaterialTheme.colorScheme.error)
+                        Spacer(modifier = Modifier.height(16.dp))
+                        TextButton(onClick = { viewModel.refresh() }) { Text("Coba Lagi", color = Gold70) }
+                    }
+                }
+            } else {
+                state.loan?.let { loan ->
+                    LoanDetailContent(
+                        loan = loan,
+                        modifier = Modifier.padding(paddingValues)
+                    )
+                }
             }
         }
     }
-}
 }
 
 @Composable
@@ -173,25 +173,25 @@ private fun LoanDetailContent(
                         modifier = Modifier.size(32.dp)
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 Text(
                     text = getStatusTitle(loan.status),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color = Gold70
                 )
-                
+
                 Text(
                     text = getStatusDescription(loan.status),
                     style = MaterialTheme.typography.bodySmall,
                     color = Color.White.copy(alpha = 0.7f),
                     textAlign = TextAlign.Center
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
-                
+
                 Text(
                     text = loan.amount.toRupiah(),
                     style = MaterialTheme.typography.headlineMedium,
@@ -200,9 +200,9 @@ private fun LoanDetailContent(
                 )
             }
         }
-        
+
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Details Card
         Card(
             modifier = Modifier.fillMaxWidth(),
@@ -211,30 +211,30 @@ private fun LoanDetailContent(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Detail Pinjaman", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Color.White)
-                
+
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 DetailRow(Icons.Default.Receipt, "ID Pinjaman", "#${loan.id}")
                 DetailRow(Icons.Default.AttachMoney, "Jumlah Pinjaman", loan.amount.toRupiah())
                 DetailRow(Icons.Default.CalendarMonth, "Tenor", "${loan.getEffectiveTenor()} bulan")
                 DetailRow(Icons.Default.AttachMoney, "Bunga", "${loan.getEffectiveInterestRate()}%")
                 DetailRow(Icons.Default.AttachMoney, "Total Bunga", loan.totalInterest.toRupiah())
-                
+
                 HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.1f))
-                
+
                 DetailRow(Icons.Default.AttachMoney, "Total Pembayaran", loan.totalPayment.toRupiah(), isHighlight = true)
                 DetailRow(Icons.Default.AttachMoney, "Cicilan/Bulan", loan.monthlyInstallment.toRupiah(), isHighlight = true)
-                
+
                 loan.createdAt?.let {
                     HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = Color.White.copy(alpha = 0.1f))
                     DetailRow(Icons.Default.AccessTime, "Tanggal Pengajuan", formatDate(it))
                 }
             }
         }
-        
+
         // Status Timeline
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         Card(
             modifier = Modifier.fillMaxWidth(),
             colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.1f)),
@@ -243,14 +243,14 @@ private fun LoanDetailContent(
             Column(modifier = Modifier.padding(16.dp)) {
                 Text("Status Pengajuan", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, color = Color.White)
                 Spacer(modifier = Modifier.height(12.dp))
-                
+
                 StatusTimelineItem("Pengajuan Diterima", isCompleted = true, isActive = loan.status in listOf("PENDING_REVIEW", "SUBMITTED"))
                 StatusTimelineItem("Sedang Direview", isCompleted = loan.status in listOf("REVIEWED", "APPROVED", "REJECTED", "DISBURSED"), isActive = loan.status in listOf("IN_REVIEW", "REVIEWED"))
                 StatusTimelineItem("Keputusan", isCompleted = loan.status in listOf("APPROVED", "REJECTED", "DISBURSED"), isActive = loan.status in listOf("APPROVED", "REJECTED"))
                 StatusTimelineItem("Dana Cair", isCompleted = loan.status == "DISBURSED", isActive = loan.status == "DISBURSED", isLast = true)
             }
         }
-        
+
         Spacer(modifier = Modifier.height(32.dp))
     }
 }
@@ -313,15 +313,18 @@ private fun StatusTimelineItem(
                         .width(2.dp)
                         .height(32.dp)
                         .background(
-                            if (isCompleted) Gold70.copy(alpha = 0.5f)
-                            else Color.White.copy(alpha = 0.2f)
+                            if (isCompleted) {
+                                Gold70.copy(alpha = 0.5f)
+                            } else {
+                                Color.White.copy(alpha = 0.2f)
+                            }
                         )
                 )
             }
         }
-        
+
         Spacer(Modifier.width(12.dp))
-        
+
         Text(
             text = title,
             style = MaterialTheme.typography.bodyMedium,
@@ -368,5 +371,7 @@ private fun formatDate(dateString: String): String {
         val outputFormat = SimpleDateFormat("dd MMMM yyyy, HH:mm", Locale("id", "ID"))
         val date = inputFormat.parse(dateString)
         date?.let { outputFormat.format(it) } ?: dateString
-    } catch (e: Exception) { dateString }
+    } catch (e: Exception) {
+        dateString
+    }
 }

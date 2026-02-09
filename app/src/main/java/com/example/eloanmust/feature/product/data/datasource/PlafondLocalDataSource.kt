@@ -15,35 +15,35 @@ import javax.inject.Singleton
 class PlafondLocalDataSource @Inject constructor(
     private val plafondDao: PlafondDao
 ) {
-    
+
     /**
      * Get all active plafonds as Flow for reactive updates.
      */
     fun getActivePlafonds(): Flow<List<PlafondEntity>> {
         return plafondDao.getActivePlafonds()
     }
-    
+
     /**
      * Get all active plafonds synchronously.
      */
     suspend fun getActivePlafondsSync(): List<PlafondEntity> {
         return plafondDao.getActivePlafondsSync()
     }
-    
+
     /**
      * Get plafond by ID.
      */
     suspend fun getPlafondById(plafondId: Long): PlafondEntity? {
         return plafondDao.getPlafondById(plafondId)
     }
-    
+
     /**
      * Find plafond for given amount (where amount is within min-max range).
      */
     suspend fun findPlafondForAmount(amount: Double): PlafondEntity? {
         return plafondDao.findPlafondForAmount(amount)
     }
-    
+
     /**
      * Insert or update a single plafond.
      */
@@ -51,7 +51,7 @@ class PlafondLocalDataSource @Inject constructor(
         Timber.d("Inserting plafond: ${plafond.name}")
         plafondDao.insertPlafond(plafond)
     }
-    
+
     /**
      * Insert or update multiple plafonds.
      */
@@ -59,14 +59,14 @@ class PlafondLocalDataSource @Inject constructor(
         Timber.d("Inserting ${plafonds.size} plafonds to cache")
         plafondDao.insertPlafonds(plafonds)
     }
-    
+
     /**
      * Delete plafond by ID.
      */
     suspend fun deletePlafond(plafondId: Long) {
         plafondDao.deletePlafond(plafondId)
     }
-    
+
     /**
      * Clear all cached plafonds.
      */
@@ -74,14 +74,14 @@ class PlafondLocalDataSource @Inject constructor(
         Timber.d("Clearing all cached plafonds")
         plafondDao.clearAll()
     }
-    
+
     /**
      * Get last cache timestamp to check if cache is stale.
      */
     suspend fun getLastCacheTime(): Long? {
         return plafondDao.getLastCacheTime()
     }
-    
+
     /**
      * Check if cache exists.
      */

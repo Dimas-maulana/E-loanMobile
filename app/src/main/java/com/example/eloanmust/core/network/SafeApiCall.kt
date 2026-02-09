@@ -49,7 +49,7 @@ private fun <T> handleApiResponse(response: Response<ApiResponse<T>>): Resource<
  */
 private fun <T> handleErrorResponse(response: Response<ApiResponse<T>>): Resource<T> {
     val errorBody = response.errorBody()?.string()
-    
+
     return try {
         if (!errorBody.isNullOrBlank()) {
             val errorResponse = Gson().fromJson(errorBody, ErrorResponse::class.java)
@@ -133,7 +133,7 @@ fun Resource.Error.isAuthError(): Boolean = code == 401
 /**
  * Extension to check if error is network error
  */
-fun Resource.Error.isNetworkError(): Boolean = 
+fun Resource.Error.isNetworkError(): Boolean =
     exception is java.net.UnknownHostException ||
-    exception is java.net.SocketTimeoutException ||
-    exception is java.net.ConnectException
+        exception is java.net.SocketTimeoutException ||
+        exception is java.net.ConnectException

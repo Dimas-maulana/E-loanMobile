@@ -9,7 +9,6 @@ import com.example.eloanmust.core.datastore.TokenManager
 import com.example.eloanmust.core.network.ApiService
 import com.example.eloanmust.core.network.safeApiCall
 import com.example.eloanmust.feature.loan.data.dto.LoanDto
-import com.example.eloanmust.feature.loan.data.local.LoanEntity
 import com.example.eloanmust.feature.loan.data.mapper.toEntity
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -37,32 +36,32 @@ class LoanHistoryViewModel @Inject constructor(
     private val loanDao: LoanDao,
     private val tokenManager: TokenManager
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(LoanHistoryState())
     val state: StateFlow<LoanHistoryState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     init {
         checkLoginAndLoadLoans()
     }
-    
+
     private fun checkLoginAndLoadLoans() {
         viewModelScope.launch {
             val isLoggedIn = tokenManager.isLoggedIn.first()
             _state.update { it.copy(isLoggedIn = isLoggedIn) }
-            
+
             if (isLoggedIn) {
                 loadLoans()
             }
         }
     }
-    
+
     fun loadLoans() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             // First, try to load from local cache
             val userId = tokenManager.userId.first()
             if (userId != null) {
@@ -72,15 +71,15 @@ class LoanHistoryViewModel @Inject constructor(
                     Timber.d("Loaded ${cachedLoans.size} loans from cache")
                 }
             }
-            
+
             // Then fetch from API
             val result = safeApiCall { apiService.getMyLoans() }
-            
+
             when (result) {
                 is Resource.Success -> {
                     Timber.d("Loaded ${result.data.size} loans from API")
                     _state.update { it.copy(isLoading = false, loans = result.data, error = null) }
-                    
+
                     // Cache to local database (Offline-First)
                     if (userId != null) {
                         val entities = result.data.map { it.toEntity(userId) }
@@ -96,17 +95,17 @@ class LoanHistoryViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun refresh() {
         viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true) }
-            
+
             val result = safeApiCall { apiService.getMyLoans() }
-            
+
             when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isRefreshing = false, loans = result.data, error = null) }
-                    
+
                     val userId = tokenManager.userId.first()
                     if (userId != null) {
                         val entities = result.data.map { it.toEntity(userId) }

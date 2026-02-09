@@ -11,8 +11,8 @@ fun createTempImageFile(context: Context): File {
     val imageFileName = "JPEG_" + timeStamp + "_"
     val storageDir = context.externalCacheDir
     return File.createTempFile(
-        imageFileName, 
-        ".jpg", 
-        storageDir 
+        imageFileName,
+        ".jpg",
+        storageDir
     )
 }

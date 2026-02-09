@@ -23,7 +23,7 @@ import javax.inject.Singleton
 
 /**
  * Implementation of LoanRepository with offline-first strategy.
- * 
+ *
  * Offline-First Flow:
  * 1. Emit cached data from local database immediately
  * 2. Fetch fresh data from remote API
@@ -38,14 +38,14 @@ class LoanRepositoryImpl @Inject constructor(
     private val networkMonitor: com.example.eloanmust.core.network.NetworkMonitor,
     @dagger.hilt.android.qualifiers.ApplicationContext private val context: android.content.Context
 ) : LoanRepository {
-    
+
     override suspend fun simulateLoan(amount: Double, tenor: Int): Resource<LoanSimulation> {
         Timber.d("Simulating loan: amount=$amount, tenor=$tenor")
-        
+
         val result = safeApiCall {
             remoteDataSource.simulateLoan(LoanSimulationRequest(amount, tenor))
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 Timber.d("Loan simulation successful")
@@ -59,18 +59,18 @@ class LoanRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override suspend fun applyLoan(application: LoanApplication): Resource<Loan> {
         Timber.d("Applying for loan: amount=${application.amount}, tenor=${application.tenor}")
-        
+
         val userId = tokenManager.userId.first() ?: return Resource.Error("User not logged in")
-        
+
         // Check internet connection
         val isOnline = networkMonitor.isCurrentlyConnected()
-        
+
         if (!isOnline) {
             Timber.d("Offline mode: Saving loan application to pending queue")
-            
+
             // Create pending loan entity
             val pendingLoan = com.example.eloanmust.feature.loan.data.local.PendingLoanEntity(
                 amount = application.amount,
@@ -78,27 +78,27 @@ class LoanRepositoryImpl @Inject constructor(
                 tenorMonth = application.tenor,
                 userId = userId
             )
-            
+
             // Save to local database
             localDataSource.insertPendingLoan(pendingLoan)
-            
+
             // Schedule background sync
             scheduleLoanSync()
-            
+
             // Return success with pending status
             return Resource.Success(pendingLoan.toDomain())
         }
-        
+
         val result = safeApiCall {
             remoteDataSource.applyLoan(application.toRequest())
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 // Cache the new loan locally
                 val loan = result.data.toDomain()
                 localDataSource.insertLoan(result.data.toEntity(userId))
-                
+
                 Timber.d("Loan application successful: id=${loan.id}")
                 Resource.Success(loan)
             }
@@ -127,7 +127,7 @@ class LoanRepositoryImpl @Inject constructor(
                 workRequest
             )
     }
-    
+
     /**
      * Offline-first implementation for getting user's loans.
      * 1. First emit cached data (if available) + Pending loans
@@ -140,9 +140,9 @@ class LoanRepositoryImpl @Inject constructor(
             emit(Resource.Error("User not logged in"))
             return@flow
         }
-        
+
         Timber.d("Getting loans for user: $userId")
-        
+
         // Helper to get combined list
         suspend fun getCombinedLoans(): List<Loan> {
             val cachedLoans = localDataSource.getLoansByUserIdSync(userId).map { it.toDomain() }
@@ -150,7 +150,7 @@ class LoanRepositoryImpl @Inject constructor(
             // Show pending, then cached
             return pendingLoans + cachedLoans
         }
-        
+
         // Step 1: Emit cached data first (if available)
         val combinedLoans = getCombinedLoans()
         if (combinedLoans.isNotEmpty()) {
@@ -160,23 +160,23 @@ class LoanRepositoryImpl @Inject constructor(
             // Emit loading if no cache
             emit(Resource.Loading)
         }
-        
+
         // Step 2: Fetch from remote
         Timber.d("Fetching loans from remote...")
-        
+
         // Only fetch if online
         if (networkMonitor.isCurrentlyConnected()) {
             val remoteResult = safeApiCall {
                 remoteDataSource.getMyLoans()
             }
-            
+
             when (remoteResult) {
                 is Resource.Success -> {
                     // Step 3: Update local cache
                     val remoteLoans = remoteResult.data
                     localDataSource.clearLoansForUser(userId)
                     localDataSource.insertLoans(remoteLoans.map { it.toEntity(userId) })
-                    
+
                     // Step 4: Emit fresh data + pending
                     val freshCombinedLoans = getCombinedLoans()
                     Timber.d("Emitting ${freshCombinedLoans.size} fresh loans from remote (+ pending)")
@@ -203,18 +203,18 @@ class LoanRepositoryImpl @Inject constructor(
             Timber.d("Offline, skipping remote fetch")
         }
     }
-    
+
     /**
      * Offline-first implementation for getting loan by ID.
      */
     override fun getLoanById(loanId: Long): Flow<Resource<Loan>> = flow {
         Timber.d("Getting loan by ID: $loanId")
-        
+
         val userId = tokenManager.userId.first() ?: run {
             emit(Resource.Error("User not logged in"))
             return@flow
         }
-        
+
         // Step 1: Check cache first
         val cachedLoan = localDataSource.getLoanByIdSync(loanId)
         if (cachedLoan != null) {
@@ -223,17 +223,17 @@ class LoanRepositoryImpl @Inject constructor(
         } else {
             emit(Resource.Loading)
         }
-        
+
         // Step 2: Fetch from remote for fresh data
         val remoteResult = safeApiCall {
             remoteDataSource.getLoanById(loanId)
         }
-        
+
         when (remoteResult) {
             is Resource.Success -> {
                 // Update cache
                 localDataSource.insertLoan(remoteResult.data.toEntity(userId))
-                
+
                 // Emit fresh data
                 Timber.d("Emitting fresh loan from remote: $loanId")
                 emit(Resource.Success(remoteResult.data.toDomain()))
@@ -250,16 +250,16 @@ class LoanRepositoryImpl @Inject constructor(
             is Resource.Idle -> {}
         }
     }
-    
+
     override suspend fun refreshLoans(): Resource<Unit> {
         val userId = tokenManager.userId.first() ?: return Resource.Error("User not logged in")
-        
+
         Timber.d("Refreshing loans for user: $userId")
-        
+
         val result = safeApiCall {
             remoteDataSource.getMyLoans()
         }
-        
+
         return when (result) {
             is Resource.Success -> {
                 localDataSource.clearLoansForUser(userId)
@@ -275,7 +275,7 @@ class LoanRepositoryImpl @Inject constructor(
             is Resource.Idle -> Resource.Idle
         }
     }
-    
+
     override suspend fun getLoansCountByStatus(status: String): Int {
         val userId = tokenManager.userId.first() ?: return 0
         return localDataSource.getLoansCountByStatus(userId, status)

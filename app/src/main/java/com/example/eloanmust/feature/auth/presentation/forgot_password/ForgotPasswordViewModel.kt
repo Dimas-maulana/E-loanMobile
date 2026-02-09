@@ -27,13 +27,13 @@ data class ForgotPasswordState(
 class ForgotPasswordViewModel @Inject constructor(
     private val forgotPasswordUseCase: ForgotPasswordUseCase
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(ForgotPasswordState())
     val state: StateFlow<ForgotPasswordState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     fun onEvent(event: ForgotPasswordEvent) {
         when (event) {
             is ForgotPasswordEvent.EmailChanged -> {
@@ -49,18 +49,18 @@ class ForgotPasswordViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun submitForgotPassword() {
         viewModelScope.launch {
             val email = _state.value.email
-            
+
             if (email.isBlank()) {
                 _state.update { it.copy(emailError = "Email tidak boleh kosong") }
                 return@launch
             }
-            
+
             _state.update { it.copy(isLoading = true) }
-            
+
             when (val result = forgotPasswordUseCase(email)) {
                 is Resource.Success -> {
                     Timber.d("Forgot password request successful")

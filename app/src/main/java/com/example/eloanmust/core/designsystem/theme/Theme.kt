@@ -28,25 +28,25 @@ private val ELoanLightColorScheme = lightColorScheme(
     onPrimary = Dark20,
     primaryContainer = Gold90,
     onPrimaryContainer = Gold10,
-    
+
     // Secondary - Dark
     secondary = Dark40,
     onSecondary = Color.White,
     secondaryContainer = Dark90,
     onSecondaryContainer = Dark10,
-    
+
     // Tertiary - Accent Gold
     tertiary = AccentAmber,
     onTertiary = Dark20,
     tertiaryContainer = Gold95,
     onTertiaryContainer = Gold20,
-    
+
     // Error
     error = ErrorMain,
     onError = Color.White,
     errorContainer = Error90,
     onErrorContainer = Error10,
-    
+
     // Background & Surface
     background = BackgroundLight,
     onBackground = OnBackgroundLight,
@@ -54,7 +54,7 @@ private val ELoanLightColorScheme = lightColorScheme(
     onSurface = OnSurfaceLight,
     surfaceVariant = SurfaceVariantLight,
     onSurfaceVariant = TextSecondaryLight,
-    
+
     // Other
     outline = BorderLight,
     outlineVariant = Dark90,
@@ -71,25 +71,25 @@ private val ELoanDarkColorScheme = darkColorScheme(
     onPrimary = Dark20,
     primaryContainer = Gold30,
     onPrimaryContainer = Gold90,
-    
+
     // Secondary - Dark
     secondary = Dark70,
     onSecondary = Dark20,
     secondaryContainer = Dark40,
     onSecondaryContainer = Dark90,
-    
+
     // Tertiary - Accent Gold
     tertiary = AccentAmber,
     onTertiary = Dark20,
     tertiaryContainer = Gold30,
     onTertiaryContainer = Gold90,
-    
+
     // Error
     error = Error80,
     onError = Error20,
     errorContainer = Error30,
     onErrorContainer = Error90,
-    
+
     // Background & Surface
     background = BackgroundDark,
     onBackground = OnBackgroundDark,
@@ -97,7 +97,7 @@ private val ELoanDarkColorScheme = darkColorScheme(
     onSurface = OnSurfaceDark,
     surfaceVariant = SurfaceVariantDark,
     onSurfaceVariant = TextSecondaryDark,
-    
+
     // Other
     outline = BorderDark,
     outlineVariant = Dark50,
@@ -157,19 +157,19 @@ object ELoanExtendedColors {
     val success = SuccessMain
     val successLight = SuccessLight
     val successDark = SuccessDark
-    
+
     val warning = WarningMain
     val warningLight = WarningLight
     val warningDark = WarningDark
-    
+
     val info = InfoMain
     val infoLight = InfoLight
     val infoDark = InfoDark
-    
+
     val error = ErrorMain
     val errorLight = ErrorLight
     val errorDark = ErrorDark
-    
+
     // Loan Status Colors
     val statusPending = StatusPending
     val statusReviewed = StatusReviewed
@@ -177,4 +177,3 @@ object ELoanExtendedColors {
     val statusRejected = StatusRejected
     val statusDisbursed = StatusDisbursed
 }
-

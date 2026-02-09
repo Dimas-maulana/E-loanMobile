@@ -13,7 +13,7 @@ import javax.inject.Singleton
 class AuthLocalDataSource @Inject constructor(
     private val tokenManager: TokenManager
 ) {
-    
+
     /**
      * Save login session data
      */
@@ -34,49 +34,49 @@ class AuthLocalDataSource @Inject constructor(
             role = role
         )
     }
-    
+
     /**
      * Clear login session (logout)
      */
     suspend fun clearLoginSession() {
         tokenManager.clearLoginData()
     }
-    
+
     /**
      * Check if user is logged in
      */
     fun isLoggedIn(): Flow<Boolean> {
         return tokenManager.isLoggedIn
     }
-    
+
     /**
      * Get current user ID
      */
     fun getCurrentUserId(): Flow<Long?> {
         return tokenManager.userId
     }
-    
+
     /**
      * Get access token
      */
     fun getAccessToken(): Flow<String?> {
         return tokenManager.accessToken
     }
-    
+
     /**
      * Get username
      */
     fun getUsername(): Flow<String?> {
         return tokenManager.username
     }
-    
+
     /**
      * Get user email
      */
     fun getUserEmail(): Flow<String?> {
         return tokenManager.userEmail
     }
-    
+
     /**
      * Get user role
      */

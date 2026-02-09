@@ -37,7 +37,7 @@ enum class LoanStatus(val value: String, val displayName: String) {
     APPROVED("APPROVED", "Disetujui"),
     REJECTED("REJECTED", "Ditolak"),
     DISBURSED("DISBURSED", "Dana Cair");
-    
+
     companion object {
         fun fromValue(value: String): LoanStatus {
             return entries.find { it.value == value } ?: PENDING_REVIEW

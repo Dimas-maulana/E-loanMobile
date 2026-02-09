@@ -1,7 +1,6 @@
 package com.example.eloanmust.feature.loan.presentation.history
 
 import androidx.compose.foundation.background
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -45,6 +44,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -70,7 +70,7 @@ fun LoanHistoryScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
-    
+
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collectLatest { event ->
             when (event) {
@@ -79,7 +79,7 @@ fun LoanHistoryScreen(
             }
         }
     }
-    
+
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
@@ -132,50 +132,50 @@ fun LoanHistoryScreen(
                 )
         ) {
             if (!state.isLoggedIn) {
-            // Not logged in - show login required
-            LoginRequiredContent(
-                message = "Silakan login untuk melihat riwayat pinjaman Anda",
-                onLoginClick = onNavigateToLogin,
-                modifier = Modifier.padding(paddingValues)
-            )
-        } else {
-            PullToRefreshBox(
-                isRefreshing = state.isRefreshing,
-                onRefresh = { viewModel.refresh() },
-                modifier = Modifier.padding(paddingValues)
-            ) {
-                if (state.isLoading && state.loans.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        CircularProgressIndicator(color = Gold70)
-                    }
-                } else if (state.error != null && state.loans.isEmpty()) {
-                    ErrorContent(
-                        message = state.error ?: "Gagal memuat data",
-                        onRetry = { viewModel.loadLoans() }
-                    )
-                } else if (state.loans.isEmpty()) {
-                    EmptyContent(onApply = onNavigateToApply)
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        item { Spacer(modifier = Modifier.height(8.dp)) }
-                        
-                        items(state.loans) { loan ->
-                            LoanCard(
-                                loan = loan,
-                                onClick = { onNavigateToDetail(loan.id) }
-                            )
+                // Not logged in - show login required
+                LoginRequiredContent(
+                    message = "Silakan login untuk melihat riwayat pinjaman Anda",
+                    onLoginClick = onNavigateToLogin,
+                    modifier = Modifier.padding(paddingValues)
+                )
+            } else {
+                PullToRefreshBox(
+                    isRefreshing = state.isRefreshing,
+                    onRefresh = { viewModel.refresh() },
+                    modifier = Modifier.padding(paddingValues)
+                ) {
+                    if (state.isLoading && state.loans.isEmpty()) {
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator(color = Gold70)
                         }
-                        
-                        item { Spacer(modifier = Modifier.height(80.dp)) }
+                    } else if (state.error != null && state.loans.isEmpty()) {
+                        ErrorContent(
+                            message = state.error ?: "Gagal memuat data",
+                            onRetry = { viewModel.loadLoans() }
+                        )
+                    } else if (state.loans.isEmpty()) {
+                        EmptyContent(onApply = onNavigateToApply)
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            item { Spacer(modifier = Modifier.height(8.dp)) }
+
+                            items(state.loans) { loan ->
+                                LoanCard(
+                                    loan = loan,
+                                    onClick = { onNavigateToDetail(loan.id) }
+                                )
+                            }
+
+                            item { Spacer(modifier = Modifier.height(80.dp)) }
+                        }
                     }
                 }
             }
         }
     }
-}
 }
 
 @Composable
@@ -210,7 +210,7 @@ private fun LoanCard(
                         )
                     }
                 }
-                
+
                 // Status Badge
                 Box(
                     modifier = Modifier
@@ -226,9 +226,9 @@ private fun LoanCard(
                     )
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(12.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -367,4 +367,3 @@ private fun formatDate(dateString: String): String {
         dateString
     }
 }
-

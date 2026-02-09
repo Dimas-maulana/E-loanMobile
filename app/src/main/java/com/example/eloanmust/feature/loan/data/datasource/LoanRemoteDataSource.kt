@@ -23,21 +23,21 @@ class LoanRemoteDataSource @Inject constructor(
     suspend fun simulateLoan(request: LoanSimulationRequest): Response<ApiResponse<LoanSimulationResponse>> {
         return apiService.simulateLoan(request)
     }
-    
+
     /**
      * Apply for loan via API
      */
     suspend fun applyLoan(request: LoanApplicationRequest): Response<ApiResponse<LoanDto>> {
         return apiService.applyLoan(request)
     }
-    
+
     /**
      * Get user's loans via API
      */
     suspend fun getMyLoans(): Response<ApiResponse<List<LoanDto>>> {
         return apiService.getMyLoans()
     }
-    
+
     /**
      * Get loan by ID via API
      */

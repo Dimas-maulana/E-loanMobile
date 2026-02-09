@@ -28,7 +28,7 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
-    
+
     /**
      * Provides HTTP Logging Interceptor for debugging
      */
@@ -43,7 +43,7 @@ object NetworkModule {
             }
         }
     }
-    
+
     /**
      * Provides Chucker Interceptor for debugging network calls
      */
@@ -57,7 +57,7 @@ object NetworkModule {
             showNotification = true,
             retentionPeriod = RetentionManager.Period.ONE_HOUR
         )
-        
+
         return ChuckerInterceptor.Builder(context)
             .collector(chuckerCollector)
             .maxContentLength(250_000L)
@@ -65,7 +65,7 @@ object NetworkModule {
             .alwaysReadResponseBody(true)
             .build()
     }
-    
+
     /**
      * Provides Auth Interceptor for JWT token injection
      */
@@ -76,7 +76,7 @@ object NetworkModule {
     ): AuthInterceptor {
         return AuthInterceptor(tokenManager)
     }
-    
+
     /**
      * Provides OkHttpClient with all interceptors
      */
@@ -101,7 +101,7 @@ object NetworkModule {
             .retryOnConnectionFailure(true)
             .build()
     }
-    
+
     /**
      * Provides Retrofit instance
      */
@@ -114,7 +114,7 @@ object NetworkModule {
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
-    
+
     /**
      * Provides ApiService instance
      */

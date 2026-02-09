@@ -8,7 +8,6 @@ import com.example.eloanmust.core.common.UiEvent
 import com.example.eloanmust.core.datastore.TokenManager
 import com.example.eloanmust.core.network.ApiService
 import com.example.eloanmust.core.network.safeApiCall
-import com.example.eloanmust.feature.profile.data.dto.CustomerProfileDto
 import com.example.eloanmust.feature.profile.data.dto.CustomerProfileRequest
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -51,37 +50,37 @@ class ProfileViewModel @Inject constructor(
     private val apiService: ApiService,
     private val tokenManager: TokenManager
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(ProfileState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     init {
         checkLoginAndLoadProfile()
     }
-    
+
     private fun checkLoginAndLoadProfile() {
         viewModelScope.launch {
             val isLoggedIn = tokenManager.isLoggedIn.first()
             _state.update { it.copy(isLoggedIn = isLoggedIn) }
-            
+
             if (isLoggedIn) {
                 loadProfile()
             }
         }
     }
-    
+
     private fun loadProfile() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             val username = tokenManager.username.first() ?: ""
             val email = tokenManager.userEmail.first() ?: ""
-            
+
             val result = safeApiCall { apiService.getProfile() }
-            
+
             when (result) {
                 is Resource.Success -> {
                     val profile = result.data
@@ -113,31 +112,31 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun checkProfileStatus() {
         viewModelScope.launch {
             val result = safeApiCall { apiService.getProfileStatus() }
             if (result is Resource.Success) {
                 val status = result.data
                 val isApiComplete = status.isComplete
-                
+
                 // Fallback: Check local data if API says incomplete
                 val isLocalComplete = checkLocalProfileCompletion()
                 val finalIsComplete = isApiComplete || isLocalComplete
-                
+
                 Timber.d("Profile check - API: $isApiComplete, Local: $isLocalComplete -> Final: $finalIsComplete")
-                
-                _state.update { 
+
+                _state.update {
                     it.copy(
                         isProfileComplete = finalIsComplete,
                         missingFields = status.missingFields ?: emptyList()
-                    ) 
+                    )
                 }
             } else if (result is Resource.Error) {
                 // If API fails, fallback to local check
-                 val isLocalComplete = checkLocalProfileCompletion()
-                 Timber.d("Profile API failed, falling back to local check: $isLocalComplete")
-                 _state.update { it.copy(isProfileComplete = isLocalComplete) }
+                val isLocalComplete = checkLocalProfileCompletion()
+                Timber.d("Profile API failed, falling back to local check: $isLocalComplete")
+                _state.update { it.copy(isProfileComplete = isLocalComplete) }
             }
         }
     }
@@ -145,15 +144,15 @@ class ProfileViewModel @Inject constructor(
     private fun checkLocalProfileCompletion(): Boolean {
         val s = _state.value
         return s.fullName.isNotBlank() &&
-               s.nik.isNotBlank() &&
-               s.birthDate.isNotBlank() &&
-               s.address.isNotBlank() &&
-               s.bankName.isNotBlank() &&
-               s.bankAccountNumber.isNotBlank() &&
-               s.bankAccountName.isNotBlank() &&
-               !s.ktpImageUrl.isNullOrBlank()
+            s.nik.isNotBlank() &&
+            s.birthDate.isNotBlank() &&
+            s.address.isNotBlank() &&
+            s.bankName.isNotBlank() &&
+            s.bankAccountNumber.isNotBlank() &&
+            s.bankAccountName.isNotBlank() &&
+            !s.ktpImageUrl.isNullOrBlank()
     }
-    
+
     fun onEvent(event: ProfileEvent) {
         when (event) {
             is ProfileEvent.ToggleEdit -> _state.update { it.copy(isEditing = !it.isEditing) }
@@ -169,13 +168,13 @@ class ProfileViewModel @Inject constructor(
             is ProfileEvent.Logout -> logout()
         }
     }
-    
+
     private fun saveProfile() {
         viewModelScope.launch {
             val currentState = _state.value
-            
+
             _state.update { it.copy(isSaving = true) }
-            
+
             val request = CustomerProfileRequest(
                 fullName = currentState.fullName,
                 nik = currentState.nik,
@@ -186,9 +185,9 @@ class ProfileViewModel @Inject constructor(
                 bankAccountNumber = currentState.bankAccountNumber.ifBlank { null },
                 bankAccountName = currentState.bankAccountName.ifBlank { null }
             )
-            
+
             val result = safeApiCall { apiService.updateProfile(request) }
-            
+
             when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isSaving = false, isEditing = false) }
@@ -207,25 +206,25 @@ class ProfileViewModel @Inject constructor(
     fun uploadKtp(file: File) {
         viewModelScope.launch {
             _state.update { it.copy(isSaving = true) }
-            
+
             val requestFile = file.asRequestBody("image/*".toMediaTypeOrNull())
             val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-            
+
             val result = safeApiCall { apiService.uploadKtp(body) }
-            
+
             when (result) {
                 is Resource.Success -> {
                     val ktpUrl = result.data
                     val formattedUrl = if (ktpUrl?.startsWith("/") == true) {
-                        "${Constants.BASE_URL}${ktpUrl}"
+                        "${Constants.BASE_URL}$ktpUrl"
                     } else {
                         ktpUrl
                     }
-                    _state.update { 
+                    _state.update {
                         it.copy(
                             isSaving = false,
                             ktpImageUrl = formattedUrl
-                        ) 
+                        )
                     }
                     _uiEvent.send(UiEvent.ShowSnackbar("KTP berhasil diupload"))
                     checkProfileStatus()
@@ -238,7 +237,7 @@ class ProfileViewModel @Inject constructor(
             }
         }
     }
-    
+
     private fun logout() {
         viewModelScope.launch {
             tokenManager.clearLoginData()

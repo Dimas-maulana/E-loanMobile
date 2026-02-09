@@ -4,7 +4,6 @@ import android.content.Context
 import android.net.Uri
 import android.util.Base64
 import android.util.Patterns
-import java.io.ByteArrayOutputStream
 import java.io.InputStream
 import java.text.NumberFormat
 import java.text.SimpleDateFormat
@@ -27,8 +26,8 @@ fun String.isValidEmail(): Boolean {
  */
 fun String.isValidPhoneNumber(): Boolean {
     return Patterns.PHONE.matcher(this).matches() &&
-            this.length >= Constants.Validation.PHONE_MIN_LENGTH &&
-            this.length <= Constants.Validation.PHONE_MAX_LENGTH
+        this.length >= Constants.Validation.PHONE_MIN_LENGTH &&
+        this.length <= Constants.Validation.PHONE_MAX_LENGTH
 }
 
 /**
@@ -43,7 +42,7 @@ fun String.isValidNik(): Boolean {
  */
 fun String.isValidPassword(): Boolean {
     return this.length >= Constants.Validation.MIN_PASSWORD_LENGTH &&
-            this.length <= Constants.Validation.MAX_PASSWORD_LENGTH
+        this.length <= Constants.Validation.MAX_PASSWORD_LENGTH
 }
 
 /**
@@ -155,12 +154,12 @@ fun Date.formatWithTime(): String {
 fun Date.toRelativeTime(): String {
     val now = System.currentTimeMillis()
     val diff = now - this.time
-    
+
     val seconds = diff / 1000
     val minutes = seconds / 60
     val hours = minutes / 60
     val days = hours / 24
-    
+
     return when {
         seconds < 60 -> "Baru saja"
         minutes < 60 -> "$minutes menit lalu"

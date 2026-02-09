@@ -11,7 +11,6 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -27,37 +26,36 @@ data class NotificationState(
     val error: String? = null
 )
 
-
 @HiltViewModel
 class NotificationViewModel @Inject constructor(
     private val notificationRepository: NotificationRepository,
     private val tokenManager: com.example.eloanmust.core.datastore.TokenManager
 ) : ViewModel() {
-    
+
     private val _state = MutableStateFlow(NotificationState())
     val state: StateFlow<NotificationState> = _state.asStateFlow()
-    
+
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     init {
         checkLoginAndLoadNotifications()
     }
-    
+
     private fun checkLoginAndLoadNotifications() {
         viewModelScope.launch {
             try {
                 // Observe login state
                 tokenManager.isLoggedIn.collect { isLoggedIn ->
                     _state.update { it.copy(isLoggedIn = isLoggedIn) }
-                    
+
                     if (isLoggedIn) {
                         // 1. Start observing DB immediately (Offline First)
                         launch {
                             notificationRepository.getNotifications().collect { notifications ->
                                 Timber.d("NotificationViewModel: Collected ${notifications.size} notifications from DB")
                                 val unreadCount = notifications.count { !it.isRead }
-                                _state.update { 
+                                _state.update {
                                     it.copy(
                                         notifications = notifications,
                                         unreadCount = unreadCount,
@@ -66,7 +64,7 @@ class NotificationViewModel @Inject constructor(
                                 }
                             }
                         }
-                        
+
                         // 2. Trigger API refresh in parallel
                         launch {
                             refreshNotificationsFromApi()
@@ -82,12 +80,12 @@ class NotificationViewModel @Inject constructor(
             }
         }
     }
-    
+
     private suspend fun refreshNotificationsFromApi() {
         _state.update { it.copy(isLoading = true) }
-        
+
         val result = notificationRepository.refreshNotifications()
-        
+
         when (result) {
             is Resource.Success -> {
                 Timber.d("NotificationViewModel: Refresh successful")
@@ -100,13 +98,13 @@ class NotificationViewModel @Inject constructor(
             else -> _state.update { it.copy(isLoading = false) }
         }
     }
-    
+
     fun loadNotifications() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            
+
             val result = notificationRepository.refreshNotifications()
-            
+
             when (result) {
                 is Resource.Success -> {
                     Timber.d("NotificationViewModel: Load successful")
@@ -120,13 +118,13 @@ class NotificationViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun refresh() {
         viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true) }
-            
+
             val result = notificationRepository.refreshNotifications()
-            
+
             when (result) {
                 is Resource.Success -> {
                     _state.update { it.copy(isRefreshing = false, error = null) }
@@ -139,18 +137,18 @@ class NotificationViewModel @Inject constructor(
             }
         }
     }
-    
+
     fun markAsRead(notificationId: Long) {
         viewModelScope.launch {
             notificationRepository.markAsRead(notificationId)
             // Local state will be updated automatically via Flow from repository
         }
     }
-    
+
     fun markAllAsRead() {
         viewModelScope.launch {
             val result = notificationRepository.markAllAsRead()
-            
+
             if (result is Resource.Success) {
                 _uiEvent.send(UiEvent.ShowSnackbar("Semua notifikasi ditandai sudah dibaca"))
             }

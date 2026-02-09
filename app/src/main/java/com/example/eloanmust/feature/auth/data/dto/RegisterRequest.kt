@@ -8,16 +8,16 @@ import com.google.gson.annotations.SerializedName
 data class RegisterRequest(
     @SerializedName("username")
     val username: String,
-    
+
     @SerializedName("email")
     val email: String,
-    
+
     @SerializedName("password")
     val password: String,
-    
+
     @SerializedName("fullname")
     val fullname: String,
-    
+
     @SerializedName("phone")
     val phone: String
 )
@@ -28,13 +28,13 @@ data class RegisterRequest(
 data class RegisterResponse(
     @SerializedName("id")
     val id: Long,
-    
+
     @SerializedName("username")
     val username: String,
-    
+
     @SerializedName("email")
     val email: String,
-    
+
     @SerializedName("message")
     val message: String? = null
 )
@@ -53,10 +53,10 @@ data class ForgotPasswordRequest(
 data class ResetPasswordRequest(
     @SerializedName("token")
     val token: String,
-    
+
     @SerializedName("newPassword")
     val newPassword: String,
-    
+
     @SerializedName("confirmPassword")
     val confirmPassword: String
 )

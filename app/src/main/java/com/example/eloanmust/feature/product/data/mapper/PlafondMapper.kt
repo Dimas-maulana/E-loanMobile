@@ -16,7 +16,7 @@ fun PlafondDto.toEntity(): PlafondEntity {
             null
         }
     }
-    
+
     return PlafondEntity(
         id = id,
         name = name,
@@ -38,7 +38,7 @@ fun PlafondEntity.toDto(): PlafondDto {
     val createdAtStr = createdAt?.let {
         SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault()).format(it)
     }
-    
+
     return PlafondDto(
         id = id,
         name = name,

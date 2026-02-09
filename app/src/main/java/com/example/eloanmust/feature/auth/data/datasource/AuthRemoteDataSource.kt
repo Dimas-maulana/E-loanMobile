@@ -21,42 +21,42 @@ import javax.inject.Singleton
 class AuthRemoteDataSource @Inject constructor(
     private val apiService: ApiService
 ) {
-    
+
     /**
      * Login user via API
      */
     suspend fun login(request: LoginRequest): Response<ApiResponse<LoginResponse>> {
         return apiService.login(request)
     }
-    
+
     /**
      * Login with Google using Firebase ID Token
      */
     suspend fun loginWithGoogle(request: GoogleAuthRequest): Response<ApiResponse<LoginResponse>> {
         return apiService.loginWithGoogle(request)
     }
-    
+
     /**
      * Register new user via API
      */
     suspend fun register(request: RegisterRequest): Response<ApiResponse<RegisterResponse>> {
         return apiService.register(request)
     }
-    
+
     /**
      * Logout user via API
      */
     suspend fun logout(): Response<ApiResponse<Unit>> {
         return apiService.logout()
     }
-    
+
     /**
      * Request password reset via API
      */
     suspend fun forgotPassword(request: ForgotPasswordRequest): Response<ApiResponse<Unit>> {
         return apiService.forgotPassword(request)
     }
-    
+
     /**
      * Reset password via API
      */
